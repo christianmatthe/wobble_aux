@@ -30,5 +30,5 @@ results
 wobble/*.txt
 ###
 
-plots
+# plots
 *.pdf
