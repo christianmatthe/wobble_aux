@@ -29,3 +29,6 @@ data
 results
 wobble/*.txt
 ###
+
+plots
+*.pdf
