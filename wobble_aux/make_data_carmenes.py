@@ -75,7 +75,7 @@ def dimensions(arm):
     return M, R
 
 def read_data_from_fits(filelist, arm='vis', starname=None):
-    names = pd.read_csv('name_conversion_list.csv')
+    names = pd.read_csv('carmenes_aux_files/name_conversion_list.csv')
     name_dict = dict(zip(names['#Karmn'], names['Name']))
     # input : a list of filenames
     N = len(filelist)  # number of epochs
@@ -190,24 +190,55 @@ def write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs,
     filenames = [a.encode('utf8') for a in filenames] # h5py workaround
     dset = h.create_dataset('filelist', data=filenames)
     h.close()
+    
+def split_orders(array):
+    array_old = array
+    shape_old = array.shape
+    x_width_new = shape_old[2] // 2
+    shape_new = (2 * shape_old[0], shape_old[1], x_width_new)
+    array_new = np.zeros(shape_new)
+    
+    for i in range(2 * shape_old[0]):
+        if i % 2 == 0:
+            array_new[i] = array_old[i//2,:,:x_width_new]
+        if i % 2 == 1:
+            array_new[i] = array_old[i//2,:,x_width_new:]
+    return array_new
+
+def split_orders_file(filename):
+    split_sets = ["data", "ivars", "xs"]
+    with h5py.File(filename,'r') as f:
+        with h5py.File(filename.split("e2ds")[0] + "split_e2ds.hdf5",'w') as g:
+            for key in list(f.keys()):
+                temp = f[key][()]
+                if key in split_sets:
+                    temp_split = split_orders(temp)
+                    temp = temp_split
+                if key in list(g.keys()):
+                    del g[key]
+                g.create_dataset(key, data = temp)
+                
+def make_data(starname, arm):
+    filelist = glob.glob('/data/cmatthe/CARM_raw_data/{0}/*sci-gtoc-{1}_A.fits'.format(starname, arm))
+    data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname= None)
+    hdffile = data_directory+'{0}_{1}_drift_shift_e2ds.hdf5'.format(starname, arm)
+    write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc, filelist, hdffile)
+    if arm == "nir":
+        split_orders_file(hdffile) # save  an aditional split copy
+
 
 
 if __name__ == "__main__":
-
-    if False: #YZ Cet VIS
-        filelist = glob.glob('/home/jkemmer/Documents/CARMENES/DATA/VIS/raw/YZ_Cet/*sci-gtoc-vis_A.fits')
-        data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts = read_data_from_fits(filelist, arm="vis", starname=None)
-        hdffile = './YZ_Cet_vis_e2ds.hdf5'
-        write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, filelist, hdffile)
-
-    if False: #YZ Cet NIR
-        filelist = glob.glob('/home/jkemmer/Documents/CARMENES/DATA/NIR/YZ_Cet/*sci-gtoc-nir_A.fits')
-        data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts = read_data_from_fits(filelist, arm="nir", starname=None)
-        hdffile = './YZ_Cet_nir_e2ds.hdf5'
-        write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, filelist, hdffile)
-
-    if True: #HD 119130 VIS
-        filelist = glob.glob('/home/jkemmer/Documents/CARMENES/DATA/VIS/raw/HD119130/*sci-gtoc-vis_A.fits')
-        data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts = read_data_from_fits(filelist, arm="vis", starname='HD 119130')
-        hdffile = './HD119130_vis_e2ds.hdf5'
-        write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, filelist, hdffile)
+    data_directory="../data/"
+    
+    
+    
+    if True: # GJ876 :vis
+        starname = "GJ436"
+        arm = "vis"
+        make_data(starname, arm)
+        
+    if True: # GJ876 :nir
+        starname = "GJ436"
+        arm = "nir"
+        make_data(starname, arm)
