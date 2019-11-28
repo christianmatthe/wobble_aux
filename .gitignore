@@ -32,3 +32,6 @@ wobble/*.txt
 
 # plots
 *.pdf
+
+#include regularization files
+!wobble_aux/regularization/*.hdf5
