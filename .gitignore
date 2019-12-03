@@ -1,34 +1,63 @@
 ###Copied from wobble
-# install and build-related things
-.DS_Store
-*.pyc
-__pycache__
-*.so
-build
-dist
-*.egg-info
-*.ipynb_checkpoints
-checkpoint
-docs/_build
-
-# plots
-*.png
-
-# paper stuff
-*.aux
-*.bbl
-*.blg
-*.log
-*.synctex.gz
-
+# # install and build-related things
+# .DS_Store
+# *.pyc
+# __pycache__
+# *.so
+# build
+# dist
+# *.egg-info
+# *.ipynb_checkpoints
+# checkpoint
+# docs/_build
+# 
+# # plots
+# *.png
+# 
+# # paper stuff
+# *.aux
+# *.bbl
+# *.blg
+# *.log
+# *.synctex.gz
+# 
+# # data
+# *.vels
+# *.csv
+# *.hdf5
 # data
-*.vels
-*.csv
-*.hdf5
-data
-results
-wobble/*.txt
-###
+# results
+# wobble/*.txt
+# ###
 
 # plots
 *.pdf
+*.png
+# avoid large data files
+*.vels
+*.csv
+*.hdf5
+
+# do not copy input and  output directories
+data
+results
+
+# install and build-related things
+
+# *.so and builld folder must not exist, so that when wobbles setup.py is run it is recompiled for the new machine
+ *.so
+# NOTE should also be hangled by lower level .gitignore inside wobble folder
+ wobble_19_03_2019/wobble/build 
+
+# Do I also need these ?
+# .DS_Store
+# *.pyc
+# __pycache__
+# dist
+ *.egg-info
+# *.ipynb_checkpoints
+# checkpoint
+# docs/_build
+
+#include regularization files
+!wobble_aux/regularization/*.hdf5
