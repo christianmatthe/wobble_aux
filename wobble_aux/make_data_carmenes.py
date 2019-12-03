@@ -20,41 +20,6 @@ _lat = 37.2236
 _lon = -2.54625
 _elevation = 2168.
 
-# listable.py: convert functions to "listable" functions, which
-#              are functions which automatically map themselves
-#              over a sequence.  This idea is borrowed from
-#              Mathematica.
-#
-### NOTE Doesn't work with np.array or one list and one scalar as input?
-#class listable:
-    #"""Make a function into a listable function."""
-    
-    #def __init__(self, f):
-        #self.func  = f
-
-    #def __call__(self, *args):
-        ## Argument cases.
-        ## Is first argument a sequence?  If so, assume they
-        ## all are; otherwise wrap them in a tuple.
-        #try:
-            #first = args[0][0] # OK if it's a sequence
-        #except TypeError: # Not subscriptable; not a sequence.
-            ## Make args into a tuple:
-            #args = (args,)
-
-        ## Construct a tuple for the argument list.  It must have
-        ## the form: (func, <sequence>).
-        #arglist = (self.func,) + args
-        #result = apply(map, arglist)
-
-        ## Return the results; a sequence if there's more than one,
-        ## else a scalar.
-        #if len(result) == 1:
-            #return result[0]
-        #else:
-            #return result
-
-
 
 def lambda_drift(v_drift, lambda_0):
     return v_drift * lambda_0 / lightvel
@@ -159,19 +124,19 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
 
     return data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc
 
-
-def savfile_to_filelist(savfile, destination_dir='../data/'):
-    # copies CCF + E2DS files to destination_dir and returns a list of the CCFs
-    s = readsav(savfile)
-    filelist = []
-    files = [f.decode('utf8') for f in s.files]
-    for f in files:
-        shutil.copy2(f, destination_dir)
-        spec_file = str.replace(f, 'ccf_G2', 'e2ds')
-        shutil.copy2(spec_file, destination_dir)
-        basename = f[str.rfind(f, '/') + 1:]
-        filelist = np.append(filelist, destination_dir+basename)
-    return filelist
+# Not used anywhere I think 03.12.2019
+#def savfile_to_filelist(savfile, destination_dir='../data/'):
+    ## copies CCF + E2DS files to destination_dir and returns a list of the CCFs
+    #s = readsav(savfile)
+    #filelist = []
+    #files = [f.decode('utf8') for f in s.files]
+    #for f in files:
+        #shutil.copy2(f, destination_dir)
+        #spec_file = str.replace(f, 'ccf_G2', 'e2ds')
+        #shutil.copy2(spec_file, destination_dir)
+        #basename = f[str.rfind(f, '/') + 1:]
+        #filelist = np.append(filelist, destination_dir+basename)
+    #return filelist
 
 
 def write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs,

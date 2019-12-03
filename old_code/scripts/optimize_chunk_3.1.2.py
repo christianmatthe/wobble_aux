@@ -37,7 +37,7 @@ data_file = '../data/' + starname + data_suffix + '_e2ds.hdf5'
 
 if True:
     plots = True
-    epochs = epochs_list[0:51:50]# alsways choses 0th and 5th epoch from actually used epochs
+    epochs = epochs_list[0:51:50]# alsways choses 0th and 50th epoch from actually used epochs
     #if 50 in epochs_list:
         #epochs = [0,50] # to plot
     #else:
