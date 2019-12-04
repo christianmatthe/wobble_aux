@@ -13,11 +13,12 @@ from run_wobble import *
 
 #import parameters
 with open("chunk_parameters.pkl", "rb") as f:
-            p = dill.load(f)
+    p = dill.load(f)
 
 #Variables generated in run_wobble efore chunk: 
 #temp_dir, plot_dir, start_time, epochs_list, chunks, plots
 #transfer Variables to local names
+i  = p.i
 temp_dir  = p.temp_dir
 plot_dir  = p.plot_dir
 start_time = p.start_time
