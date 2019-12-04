@@ -228,6 +228,7 @@ def run_wobble(parameters):
     #Loop over chunks
     for i in range(len(chunks)):
         #pass parameters object to chunk script
+        p.i = i
         with open("chunk_parameters.pkl", "wb") as f:
             dill.dump(p, f)
         #start chunk script
