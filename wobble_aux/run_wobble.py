@@ -229,7 +229,7 @@ def run_wobble(parameters):
     for i in range(len(chunks)):
         #pass parameters object to chunk script
         p.i = i
-        with open("chunk_parameters.pkl", "wb") as f:
+        with open("carmenes_aux_files/chunk_parameters.pkl", "wb") as f:
             dill.dump(p, f)
         #start chunk script
         os.system("python3 chunk.py")
