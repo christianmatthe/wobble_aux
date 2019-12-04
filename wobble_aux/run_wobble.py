@@ -327,7 +327,9 @@ def run_wobble(parameters):
     print("results saved as: {0}".format(results_file))
     print("time elapsed: {0:.2f} minutes".format((time() - start_time)/60.0))
     
-    
+    #delete temp_dir which at this point only contains duplicates
+    shutil.rmtree(temp_dir)
+    print("deleted: {0}".format(temp_dir))
     
     
     
