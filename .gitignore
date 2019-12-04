@@ -61,4 +61,7 @@ results
 
 #include regularization files
 !wobble_aux/regularization/*.hdf5
+wobble_aux/regularization/temp_star_chunk.hdf5
+wobble_aux/regularization/temp_t_chunk.hdf5
+
 
