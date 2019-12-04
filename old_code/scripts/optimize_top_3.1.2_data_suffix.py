@@ -1,4 +1,4 @@
-import sys
+#import sys
 sys.path.append('/data/cmatthe/python/wobble_aux')#this  path only works on lx39
 import combine_results as cr
 from parameters import Parameters

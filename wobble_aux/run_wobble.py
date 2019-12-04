@@ -5,6 +5,7 @@ from time import time
 import h5py
 import wobble
 import os
+import matplotlib.pyplot as plt 
 
 #Reproduce combine results first: functions required for runnign wobble in small chunks of orders so as not to overflow RAM
 def file_chunk_name(start_order, end_order, chunk_dir):
@@ -32,7 +33,7 @@ def chunk_list(start, end, chunk_size):
                 chunks = np.append(chunks, [[start_order, end_order]], axis=0) 
     return chunks
 
-def results_file_stitch(start, end, chunk_size, results_file, chunk_dir)
+def results_file_stitch(start, end, chunk_size, results_file, chunk_dir):
     """turns chunks into one continuous file, as if wobble had been run in one piece"""
     print("Writing results to {0}".format(results_file))
     #initialize results_file as copy of first chunk_list
@@ -126,7 +127,7 @@ class Parameters:
                  start = 11,
                  end = 53,
                  chunk_size = 5,
-                 reg_file_star = None #Required
+                 reg_file_star = None, #Required
                  reg_file_t = None,   #Required
                  output_suffix = "",
                  data_suffix = "",
@@ -140,7 +141,7 @@ class Parameters:
         self.niter = niter
         self.start = start
         self.end = end
-        self.chunk_size = chunk_size,
+        self.chunk_size = chunk_size
         self.reg_file_star = reg_file_star
         self.reg_file_t = reg_file_t
         self.output_suffix = output_suffix
@@ -163,7 +164,7 @@ class Parameters:
             "data_suffix" : data_suffix
             }
             '''
-        if starname = None:
+        if starname is None:
             raise Exception("Must specify which star to run with the 'starname' keyword in parameters")
         if reg_file_star is None or reg_file_t is None:
             raise Exception("Must specify both reg_file_star and reg_file_t")
@@ -174,7 +175,7 @@ def reg_chunk(chunk, reg_file_star, reg_file_t):
     start_chunk = int(chunk[0])
     end_chunk = int(chunk[1])
     #NOTE assumes reg file starts at order 0 TODO implenent check that file is 61 orders long i.e. that reg file is valid
-    reg_file_star_chunk = '/wobble_aux/regularization/temp_star_chunk.hdf5'
+    reg_file_star_chunk = 'regularization/temp_star_chunk.hdf5'
     with h5py.File(reg_file_star,'r') as f:
         with h5py.File(reg_file_star_chunk,'w') as g:
             for key in list(f.keys()):
@@ -182,7 +183,7 @@ def reg_chunk(chunk, reg_file_star, reg_file_t):
                     if key in list(g.keys()):
                         del g[key]
                     g.create_dataset(key, data = temp)
-    reg_file_t_chunk = '/wobble_aux/regularization/temp_t_chunk.hdf5'
+    reg_file_t_chunk = 'regularization/temp_t_chunk.hdf5'
     with h5py.File(reg_file_t,'r') as f:
         with h5py.File(reg_file_t_chunk,'w') as g:
             for key in list(f.keys()):
@@ -198,13 +199,13 @@ def run_wobble(parameters):
     movies = False
     
     p = parameters
-    results_name = '/results_{0}_Kstar{1}_Kt{2}_'.format(p.starname, p.K_star, p.K_t, p.niter) + p.output_suffix
+    results_name = 'results_{0}_Kstar{1}_Kt{2}_'.format(p.starname, p.K_star, p.K_t, p.niter) + p.output_suffix
     results_file_base = p.results_dir + results_name
-    results_file = p.results_file_base + '.hdf5'
-    data_file = p.data_dir + p.starname + p.data_suffix + '_e2ds.hdf5'
+    results_file = results_file_base + '.hdf5'
+    data_file = p.data_dir + p.starname  + p.data_suffix + '_e2ds.hdf5'
     
     temp_dir = p.results_dir + '/temp_' + results_name + '/'
-    plot_dir = temp_dir = p.results_dir + '/plots_' + results_name + '/'
+    plot_dir = p.results_dir + '/plots_' + results_name + '/'
     #make (output) directory
     #TODO these data and results dirs should be handlesd somewhere else
     os.makedirs(p.results_dir, exist_ok = True)
@@ -216,7 +217,7 @@ def run_wobble(parameters):
     start_time = time()
     chunks = chunk_list(p.start, p.end, p.chunk_size)
     #generate epoch list
-    data = wobble.data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr)
+    data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr)
     epochs_list = data.epochs.tolist()
     
     #Loop over chunks
@@ -286,7 +287,7 @@ def run_wobble(parameters):
                     plt.savefig(plot_dir+'results_synth_o{0}_e{1}.png'.format(o, epochs_list[e]))
                     plt.close(fig)
             else:
-            wobble.optimize_order(model, niter= p.niter)
+                wobble.optimize_order(model, niter= p.niter)
             del model # not sure if this does anything
             print("order {1} optimization finished. time elapsed: {0:.2f} min".format((time() - start_time)/60.0, o))
             print("this order took {0:.2f} min".format((time() - start_time - elapsed_time)/60.0))
@@ -298,7 +299,7 @@ def run_wobble(parameters):
         print("results saved as: {0}".format(results_chunk))
         print("time elapsed: {0:.2f} minutes".format((time() - start_time)/60.0))
     print("all chunks optimized: writing combined file") 
-    results_file_stitch(start, end, chunk_size, results_file, chunk_dir)
+    results_file_stitch(p.start, p.end, p.chunk_size, results_file, chunk_dir)
     
     #Combine orders
     results = wobble.Results(filename = results_file)
@@ -317,11 +318,11 @@ def run_wobble(parameters):
     
 
 
-if __name__ = "__main__":
+if __name__ == "__main__":
     
-    #lx39 example:
+
     parameters = Parameters(starname = "GJ436",
-                            data_suffix = "_vis",
+                            data_suffix = "_vis_drift_shift",
                             start = 11,
                             end = 53,
                             chunk_size = 5,
@@ -329,3 +330,5 @@ if __name__ = "__main__":
                             reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
                             reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
                             output_suffix = "git_run_wobble_test0")
+    
+    run_wobble(parameters)

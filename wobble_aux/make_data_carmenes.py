@@ -6,11 +6,20 @@ import h5py
 import math
 from astropy.io import fits
 from astropy.time import Time
+#from astropy.utils.iers import IERS_A_URL_MIRROR #IF main  source unavailable
 import shutil
 import glob
 import os
 import barycorrpy as bary
 import pandas as pd
+
+#https://github.com/astropy/astropy/issues/8981
+from astropy.utils import iers
+from astropy.utils.iers import conf as iers_conf
+#iers_conf.iers_auto_url
+'https://maia.usno.navy.mil/ser7/finals2000A.all'
+iers_conf.iers_auto_url = 'https://astroconda.org/aux/astropy_mirror/iers_a_1/finals2000A.all'
+iers_conf.iers_auto_url_mirror = 'https://astroconda.org/aux/astropy_mirror/iers_a_2/finals2000A.all'
 
 from scipy.constants import codata 
 lightvel = codata.value('speed of light in vacuum') #for barycorr
@@ -183,8 +192,8 @@ def split_orders_file(filename):
                     del g[key]
                 g.create_dataset(key, data = temp)
                 
-def make_data(starname, arm):
-    filelist = glob.glob('/data/cmatthe/CARM_raw_data/{0}/*sci-gtoc-{1}_A.fits'.format(starname, arm))
+def make_data(starname, arm, data_directory):
+    filelist = glob.glob(data_directory + 'CARM_raw_data/{0}/*sci-gtoc-{1}_A.fits'.format(starname, arm))
     data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname= None)
     hdffile = data_directory+'{0}_{1}_drift_shift_e2ds.hdf5'.format(starname, arm)
     write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc, filelist, hdffile)
@@ -201,9 +210,9 @@ if __name__ == "__main__":
     if True: # GJ876 :vis
         starname = "GJ436"
         arm = "vis"
-        make_data(starname, arm)
+        make_data(starname, arm, data_directory)
         
     if True: # GJ876 :nir
         starname = "GJ436"
         arm = "nir"
-        make_data(starname, arm)
+        make_data(starname, arm, data_directory)
