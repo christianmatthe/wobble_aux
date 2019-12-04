@@ -51,8 +51,8 @@ results
 
 # Do I also need these ?
 # .DS_Store
-# *.pyc
-# __pycache__
+*.pyc
+__pycache__
 # dist
  *.egg-info
 # *.ipynb_checkpoints
@@ -63,5 +63,8 @@ results
 !wobble_aux/regularization/*.hdf5
 wobble_aux/regularization/temp_star_chunk.hdf5
 wobble_aux/regularization/temp_t_chunk.hdf5
+
+#stored objects
+*.pkl
 
 
