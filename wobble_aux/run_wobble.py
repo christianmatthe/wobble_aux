@@ -206,7 +206,7 @@ def run_wobble(parameters):
     results_name = 'results_{0}_Kstar{1}_Kt{2}_'.format(p.starname, p.K_star, p.K_t, p.niter) + p.output_suffix
     results_file_base = p.results_dir + results_name
     results_file = results_file_base + '.hdf5'
-    data_file = p.data_dir + p.starname  + p.data_suffix + '_e2ds.hdf5'
+    data_file = p.data_file = p.data_dir + p.starname  + p.data_suffix + '_e2ds.hdf5'
     
     temp_dir = p.temp_dir = p.results_dir + '/temp_' + results_name + '/'
     plot_dir = p.plot_dir = p.results_dir + '/plots_' + results_name + '/'
@@ -315,7 +315,7 @@ def run_wobble(parameters):
         ##### end Chunk
         '''
     print("all chunks optimized: writing combined file") 
-    results_file_stitch(p.start, p.end, p.chunk_size, results_file, chunk_dir)
+    results_file_stitch(p.start, p.end, p.chunk_size, results_file, temp_dir)
     
     #Combine orders
     results = wobble.Results(filename = results_file)
