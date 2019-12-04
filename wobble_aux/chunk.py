@@ -16,7 +16,7 @@ with open("chunk_parameters.pkl", "rb") as f:
     p = dill.load(f)
 
 #Variables generated in run_wobble efore chunk: 
-#temp_dir, plot_dir, start_time, epochs_list, chunks, plots
+#temp_dir, plot_dir, start_time, epochs_list, chunks, data_file
 #transfer Variables to local names
 i  = p.i
 temp_dir  = p.temp_dir
@@ -24,6 +24,7 @@ plot_dir  = p.plot_dir
 start_time = p.start_time
 epochs_list = p.epochs_list
 chunks  = p.chunks
+data_file = p.data_file
 
 
 ###Start of wobble Chunk
@@ -98,8 +99,7 @@ for r,o in enumerate(orders):
     print("this order took {0:.2f} min".format((time() - start_time - elapsed_time)/60.0))
     elapsed_time = time() - start_time
 print("all orders in chunk optimized.")
-chunk_dir = temp_dir
-results_chunk = file_chunk_name(start_order, end_order, chunk_dir)
+results_chunk = file_chunk_name(start_order, end_order, temp_dir)
 results.write(results_chunk)
 print("results saved as: {0}".format(results_chunk))
 print("time elapsed: {0:.2f} minutes".format((time() - start_time)/60.0))
