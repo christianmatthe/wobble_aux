@@ -5,7 +5,8 @@ from time import time
 import h5py
 import wobble
 import os
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+import dill
 
 #Reproduce combine results first: functions required for runnign wobble in small chunks of orders so as not to overflow RAM
 def file_chunk_name(start_order, end_order, chunk_dir):
@@ -83,7 +84,7 @@ def append_dates_utc(results_file, data_file):
 
 class Parameters: 
     """
-    The Parameter dictonary object: contains the parameters specifying how to run wobble.
+    The Parameter object: contains the parameters specifying how to run wobble.
     
     Parameters
     ----------
@@ -115,6 +116,9 @@ class Parameters:
         path to directory from which data is loaded
     min_snr : `int` (default `60`)
         epochs with average SNR over range of optimized orders below this  number are dropped (5 is wobble default but this is too low in many cases)
+    plots : `bool` (default `True`)
+        whether or not plots of the generated synthetic spectra are saved
+        
     
         
     
@@ -133,7 +137,8 @@ class Parameters:
                  data_suffix = "",
                  results_dir = '../results/',
                  data_dir= '../data/',
-                 min_snr = 60
+                 min_snr = 60,
+                 plots = True
                  ):
         self.starname = starname
         self.K_star = K_star
@@ -149,6 +154,7 @@ class Parameters:
         self.results_dir = results_dir
         self.data_dir= data_dir
         self.min_snr = min_snr
+        self.plots = plots
         '''
         self.dictionary = {
             "starname" : starname,
@@ -175,6 +181,7 @@ def reg_chunk(chunk, reg_file_star, reg_file_t):
     start_chunk = int(chunk[0])
     end_chunk = int(chunk[1])
     #NOTE assumes reg file starts at order 0 TODO implenent check that file is 61 orders long i.e. that reg file is valid
+    #TODO Remove hardcoded temp location?
     reg_file_star_chunk = 'regularization/temp_star_chunk.hdf5'
     with h5py.File(reg_file_star,'r') as f:
         with h5py.File(reg_file_star_chunk,'w') as g:
@@ -194,18 +201,15 @@ def reg_chunk(chunk, reg_file_star, reg_file_t):
     return reg_file_star_chunk, reg_file_t_chunk
 
 def run_wobble(parameters):
-    #TODO make these parameters or eliminate
-    plots = True
-    movies = False
-    
     p = parameters
+    
     results_name = 'results_{0}_Kstar{1}_Kt{2}_'.format(p.starname, p.K_star, p.K_t, p.niter) + p.output_suffix
     results_file_base = p.results_dir + results_name
     results_file = results_file_base + '.hdf5'
     data_file = p.data_dir + p.starname  + p.data_suffix + '_e2ds.hdf5'
     
-    temp_dir = p.results_dir + '/temp_' + results_name + '/'
-    plot_dir = p.results_dir + '/plots_' + results_name + '/'
+    temp_dir = p.temp_dir = p.results_dir + '/temp_' + results_name + '/'
+    plot_dir = p.plot_dir = p.results_dir + '/plots_' + results_name + '/'
     #make (output) directory
     #TODO these data and results dirs should be handlesd somewhere else
     os.makedirs(p.results_dir, exist_ok = True)
@@ -214,22 +218,31 @@ def run_wobble(parameters):
     os.makedirs(temp_dir, exist_ok = True)
     os.makedirs(plot_dir, exist_ok = True)
     
-    start_time = time()
-    chunks = chunk_list(p.start, p.end, p.chunk_size)
+    start_time = p.start_time = time()
+    chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size)
     #generate epoch list
     data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr)
-    epochs_list = data.epochs.tolist()
+    epochs_list = p.epochs_list = data.epochs.tolist()
+    
     
     #Loop over chunks
     for i in range(len(chunks)):
+        #pass parameters object to chunk script
+        with open("chunk_parameters.pkl", "wb") as f:
+            dill.dump(p, f)
+        #start chunk script
+        os.system("python3 chunk.py")
+        
+        '''
+        ####### transfer to chunk.py
         start_time_chunk = time()
-        reg_file_star_chunk, reg_file_t_chunk = reg_chunk(chunks[i], p.reg_file_star, p.reg_file_t)
+        reg_file_star_chunk, reg_file_t_chunk = reg_chunk(p.chunks[i], p.reg_file_star, p.reg_file_t)
         start_order = chunks[i, 0]
         end_order = chunks[i, 1]
         
         print("running wobble on star {0} with K_star = {1}, K_t = {2}, orders[{3},{4})".format(p.starname, p.K_star, p.K_t, start_order, end_order))
         orders = np.arange(start_order, end_order)
-        data = wobble.Data(data_file, orders=orders, epochs=epochs_list, min_flux=10**-5, min_snr=0)
+        data = wobble.Data(data_file, orders=orders, epochs=p.epochs_list, min_flux=10**-5, min_snr=0)
         results = wobble.Results(data=data)
         
         print("data loaded")
@@ -251,7 +264,7 @@ def run_wobble(parameters):
             if plots:
                 epochs_to_plot = epochs_list[0:51:50]# alsways choses 0th and 50th epoch from actually used epochs
                 wobble.optimize_order(model, niter = p.niter, save_history = True,
-                                      basename = plot_dir + 'history', movies = movies,
+                                      basename = plot_dir + 'history', movies = False,
                                       epochs_to_plot = epochs_to_plot)
                 fig, ax = plt.subplots(1, 1, figsize=(8,5))
                 ax.plot(data.dates, results.star_rvs[r] + data.bervs - np.mean(results.star_rvs[r] + data.bervs), 
@@ -298,6 +311,8 @@ def run_wobble(parameters):
         results.write(results_chunk)
         print("results saved as: {0}".format(results_chunk))
         print("time elapsed: {0:.2f} minutes".format((time() - start_time)/60.0))
+        ##### end Chunk
+        '''
     print("all chunks optimized: writing combined file") 
     results_file_stitch(p.start, p.end, p.chunk_size, results_file, chunk_dir)
     
@@ -321,14 +336,24 @@ def run_wobble(parameters):
 if __name__ == "__main__":
     
 
+    #parameters = Parameters(starname = "GJ436",
+                            #data_suffix = "_vis_drift_shift",
+                            #start = 11,
+                            #end = 53,
+                            #chunk_size = 5,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
+                            #reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
+                            #output_suffix = "git_run_wobble_test0")
+    #quick example
     parameters = Parameters(starname = "GJ436",
                             data_suffix = "_vis_drift_shift",
-                            start = 11,
-                            end = 53,
-                            chunk_size = 5,
+                            start = 30,
+                            end = 36,
+                            chunk_size = 2,
                             niter = 160,
                             reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
                             reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
-                            output_suffix = "git_run_wobble_test0")
+                            output_suffix = "git_run_wobble_test1")
     
     run_wobble(parameters)
