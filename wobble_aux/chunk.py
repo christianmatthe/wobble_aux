@@ -35,7 +35,9 @@ end_order = chunks[i, 1]
 
 print("running wobble on star {0} with K_star = {1}, K_t = {2}, orders[{3},{4})".format(p.starname, p.K_star, p.K_t, start_order, end_order))
 orders = np.arange(start_order, end_order)
-data = wobble.Data(data_file, orders=orders, epochs=epochs_list, min_flux=10**-5, min_snr=0)
+data = wobble.Data(data_file, orders=orders, epochs=epochs_list, min_flux=10**-5, min_snr=0,
+                   parameters = p
+                   )
 results = wobble.Results(data=data)
 
 print("data loaded")
@@ -55,7 +57,7 @@ for r,o in enumerate(orders):
     print("--- ORDER {0} ---".format(o))
     
     if p.plots:
-        epochs_to_plot = epochs_list[0:51:50]# alsways choses 0th and 50th epoch from actually used epochs
+        epochs_to_plot = epochs_list[0:51:50]# alsways chooses 0th and 50th epoch from actually used epochs
         wobble.optimize_order(model, niter = p.niter, save_history = True,
                                 basename = plot_dir + 'history', movies = False,
                                 epochs_to_plot = epochs_to_plot)

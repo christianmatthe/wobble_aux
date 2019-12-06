@@ -7,6 +7,10 @@ from .utils import fit_continuum
 
 #edited imports
 import os
+import scipy.interpolate as interpolate
+#import sys
+#sys.path.append('../../../wobble_aux')
+#from run_wobble import Parameters
 
 class Data(object):
     """
@@ -92,7 +96,8 @@ class Data(object):
                 bad = np.logical_or(bad, np.roll(bad, pad+1))
                 bad = np.logical_or(bad, np.roll(bad, -pad-1))
             self.ivars[r][bad] = 0.
-            
+   
+   
     def read_data(self, origin_file, orders = None, epochs = None):
         """Read origin file and set up data attributes from it"""
         # TODO: add asserts to check data are finite, no NaNs, non-negative ivars, etc
@@ -169,6 +174,7 @@ class Data(object):
                     break
 
     #### 
+    '''
     def continuum_normalize(self, plot_continuum=False, plot_dir='../results/', **kwargs):
         """Continuum-normalize all spectra using a polynomial fit. Takes kwargs of utils.fit_continuum"""
         for r in range(self.R):
@@ -186,32 +192,87 @@ class Data(object):
                     self.ys[r][n] -= fit
                 except:
                     print("ERROR: Data: order {0}, epoch {1} could not be continuum normalized!".format(r,n))
-                    
-    #### Edited function below to change plot dir
     '''
-    def continuum_normalize(self, plot_continuum=False, plot_dir='../results/', order = 1, **kwargs):
+    #### Edited function below to change plot dir
+    def continuum_normalize(self, **kwargs):
+        # passinng parameters via kwargs do data class doew not require changes if adapting this to a new wobble version 
+        try:
+            p = kwargs["parameters"]
+        except:
+            raise Exception("must pass parameters object to data object via kwargs in .Data for continuum_normalize")
+        plot_continuum = p.plot_continuum
+        plot_dir_continuum = p.plot_dir + "/continuum/"
+        if plot_continuum:
+            os.makedirs(plot_dir_continuum, exist_ok = True)
+        order = p.continuum_order
+        #TODO make this not Hard Coded
+        file_dir = os.path.dirname(__file__)
+        telluric_mask_file = file_dir + "/"+"../../../wobble_aux/carmenes_aux_files/" + "telluric_mask_carm_short.dat"
+        
+        
+        #mask tellurics
+        if telluric_mask_file is not None:
+            telluric_mask = np.genfromtxt(telluric_mask_file)
+            #extend mask (with value 0) to include earliest CARMENES orders
+            mask = telluric_mask
+            mask = np.insert(mask, 0, [0.0,0],axis = 0)
+            mask = np.append(mask, [[50000, 0]], axis = 0)
+            #create decision function basedon interpolation of Mask
+            mask_function = interpolate.interp1d(mask[:,0],mask[:,1])
+            mask_array = np.zeros(np.array(self.xs).shape)
+            mask_bool = np.ones(np.array(self.xs).shape, dtype = bool)
+            #loop over all entries
+            for o, xs_order in enumerate(self.xs):
+                for e, xs_epoch in enumerate(xs_order):
+                    for l, xs_lambda in enumerate(xs_epoch):
+                        if mask_function(np.exp(xs_lambda)) == 1:
+                            mask_array[o,e,l] = 1
+                            #mask_bool[o,e,l] = False
+            #mask data (all parts with this shape) (xs, ys, ((fluxes, flux_ivars,)) ivars)
+            xs_masked = np.ma.masked_array(self.xs, mask = mask_array)
+            ys_masked = np.ma.masked_array(self.ys, mask = mask_array)
+            ivars_masked = np.ma.masked_array(self.ivars, mask = mask_array)
+            
+            #xs_deleted = np.delete(self.xs, mask_bool, axis = 0)
+            #ys_deleted = np.delete(self.ys, mask_bool, axis = 0)
+            #ivars_deleted = np.delete(self.ivars, mask_bool, axis = 0)
+            #print(xs_deleted, xs_deleted.shape)
+            
         """Continuum-normalize all spectra using a polynomial fit. Takes kwargs of utils.fit_continuum"""
         for r in range(self.R):
             for n in range(self.N):
-                try:
-                    #Changed fit order to 1 (only linear trend)
-                    fit = fit_continuum(self.xs[r][n], self.ys[r][n], self.ivars[r][n], order = order, **kwargs)
-                    if plot_continuum:
-                        #change plot dir to a name based ton the data file, since this is the only name available at this point in the code
-                        plot_dir_new = plot_dir + "plots_continuum_order{}".format(order) + os.path.basename(self.origin_file) + "/"
-                        os.makedirs(plot_dir_new, exist_ok = True)
-                        
-                        fig, ax = plt.subplots(1, 1, figsize=(8,5))
-                        ax.scatter(self.xs[r][n], self.ys[r][n], marker=".", alpha=0.5, c='k', s=40)
-                        mask = self.ivars[r][n] <= 1.e-8
-                        ax.scatter(self.xs[r][n][mask], self.ys[r][n][mask], marker=".", alpha=1., c='white', s=20)                        
-                        ax.plot(self.xs[r][n], fit)
-                        fig.savefig(plot_dir_new +'continuum_o{0}_e{1}.png'.format(self.orders[r], self.epochs[n]))
-                        plt.close(fig)
-                    self.ys[r][n] -= fit
-                except:
-                    print("ERROR: Data: order {0}, epoch {1} could not be continuum normalized!".format(r,n))
-                    '''
+                #try:
+                    
+                #fit = fit_continuum(xs_deleted[r][n], ys_deleted[r][n], ivars_deleted[r][n], order = order
+                                ##, **kwargs
+                                #)
+                fit = fit_continuum(xs_masked[r][n].compressed(), ys_masked[r][n].compressed(), ivars_masked[r][n].compressed(), order = order
+                                    #, **kwargs
+                                    ) #pass compressed arrays, to get rid of masked sections
+                #fit = fit_continuum(xs_masked[r][n], ys_masked[r][n], ivars_masked[r][n], order = order
+                                    ##, **kwargs
+                                    #)
+                #fit = fit_continuum(self.xs[r][n], self.ys[r][n], self.ivars[r][n], order = order
+                                    ##, **kwargs
+                                    #)
+                
+                                    
+                if plot_continuum:
+                    
+                    fig, ax = plt.subplots(1, 1, figsize=(8,5))
+                    ax.scatter(self.xs[r][n], self.ys[r][n], marker=".", alpha=0.1, c='b', s=40)
+                    ax.scatter(xs_masked[r][n], ys_masked[r][n], marker=".", alpha=0.5, c='k', s=40)
+                    mask_ivars = self.ivars[r][n] <= 1.e-8
+                    ax.scatter(self.xs[r][n][mask_ivars], self.ys[r][n][mask_ivars], marker=".", alpha=1., c='white', s=20)                        
+                    ax.plot(xs_masked[r][n].compressed(), fit)
+                    fig.savefig(plot_dir_continuum +'continuum_o{0}_e{1}.png'.format(self.orders[r], self.epochs[n]))
+                    plt.close(fig)
+                #self.ys[r][n] -= fit
+                #fit needs to be interpolated to match  grid before mask
+                fit_function = interpolate.interp1d(xs_masked[r][n].compressed(), fit, fill_value = "extrapolate")#requires numpy 1.17 -> creates deprecation warnings
+                self.ys[r][n] -= fit_function(self.xs[r][n])
+                #except:
+                    #print("ERROR: Data: order {0}, epoch {1} could not be continuum normalized!".format(self.orders[r],self.epochs[n]))
                     
     def append(self, data2):
         """Append another dataset to the current one(s)."""

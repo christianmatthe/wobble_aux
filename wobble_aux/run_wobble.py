@@ -118,6 +118,11 @@ class Parameters:
         epochs with average SNR over range of optimized orders below this  number are dropped (5 is wobble default but this is too low in many cases)
     plots : `bool` (default `True`)
         whether or not plots of the generated synthetic spectra are saved
+    continuum_order : `int` (default `1`)
+        (wobble default is 6)
+        order of the polynomial used for normalizing the spectra
+    plot_continuum : `bool` (default `False`)
+        whether or not to output plots of the continua during data import (Note: a LOT of plots (orders*epochs))
         
     
         
@@ -138,7 +143,9 @@ class Parameters:
                  results_dir = '../results/',
                  data_dir= '../data/',
                  min_snr = 60,
-                 plots = True
+                 plots = True,
+                 continuum_order = 1,
+                 plot_continuum  = False
                  ):
         self.starname = starname
         self.K_star = K_star
@@ -155,6 +162,8 @@ class Parameters:
         self.data_dir= data_dir
         self.min_snr = min_snr
         self.plots = plots
+        self.continuum_order = continuum_order
+        self.plot_continuum  = plot_continuum
         '''
         self.dictionary = {
             "starname" : starname,
@@ -221,7 +230,9 @@ def run_wobble(parameters):
     start_time = p.start_time = time()
     chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size)
     #generate epoch list
-    data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr)
+    data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr,
+                       parameters = p
+                       )
     epochs_list = p.epochs_list = data.epochs.tolist()
     
     
@@ -272,11 +283,13 @@ if __name__ == "__main__":
     parameters = Parameters(starname = "GJ436",
                             data_suffix = "_vis_drift_shift",
                             start = 30,
-                            end = 36,
+                            end = 34,
                             chunk_size = 2,
                             niter = 160,
                             reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
                             reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
-                            output_suffix = "git_run_wobble_test1")
+                            output_suffix = "test_2_continua",
+                            plot_continuum = True
+                            )
     
     run_wobble(parameters)
