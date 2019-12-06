@@ -56,8 +56,6 @@ def fit_continuum(x, y, ivars, order=6, nsigma=[0.3,3.0], maxniter=50):
     m = np.ones(len(x), dtype=bool)
     for i in range(maxniter):
         m[ivars == 0] = 0  # mask out the bad pixels
-        #print(A , y)
-        #print(A.shape, y.shape)
         w = np.linalg.solve(np.dot(A[m].T, A[m]), np.dot(A[m].T, y[m]))
         mu = np.dot(A, w)
         resid = y - mu
