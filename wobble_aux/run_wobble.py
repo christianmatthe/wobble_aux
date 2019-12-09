@@ -279,7 +279,7 @@ if __name__ == "__main__":
                             #reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
                             #reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
                             #output_suffix = "git_run_wobble_test0")
-    #quick example
+    #quick example : use as standart test?
     parameters = Parameters(starname = "GJ436",
                             data_suffix = "_vis_drift_shift",
                             start = 30,
@@ -289,7 +289,7 @@ if __name__ == "__main__":
                             reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
                             reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
                             output_suffix = "test_2_continua",
-                            plot_continuum = True
+                            plot_continuum = False
                             )
     
     run_wobble(parameters)

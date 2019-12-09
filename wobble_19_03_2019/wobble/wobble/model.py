@@ -1,7 +1,13 @@
 import numpy as np
 from tqdm import tqdm
 import sys
-import tensorflow as tf
+#import tensorflow as tf
+### supress future warnings from tensorflow 1.10 to 1.14 interactionwith numpy 1.17
+import warnings  
+with warnings.catch_warnings():  
+    warnings.filterwarnings("ignore",category=FutureWarning)
+    import tensorflow as tf
+###
 import h5py
 T = tf.float64
 
