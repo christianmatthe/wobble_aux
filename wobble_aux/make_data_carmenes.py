@@ -12,14 +12,15 @@ import glob
 import os
 import barycorrpy as bary
 import pandas as pd
+from time import time
 
-#https://github.com/astropy/astropy/issues/8981 alternate mirrors for iers
-from astropy.utils import iers
-from astropy.utils.iers import conf as iers_conf
-#iers_conf.iers_auto_url
-'https://maia.usno.navy.mil/ser7/finals2000A.all'
-iers_conf.iers_auto_url = 'https://astroconda.org/aux/astropy_mirror/iers_a_1/finals2000A.all'
-iers_conf.iers_auto_url_mirror = 'https://astroconda.org/aux/astropy_mirror/iers_a_2/finals2000A.all'
+##https://github.com/astropy/astropy/issues/8981 alternate mirrors for iers (old)
+#from astropy.utils import iers
+#from astropy.utils.iers import conf as iers_conf
+##iers_conf.iers_auto_url
+#'https://maia.usno.navy.mil/ser7/finals2000A.all'
+#iers_conf.iers_auto_url = 'https://astroconda.org/aux/astropy_mirror/iers_a_1/finals2000A.all'
+#iers_conf.iers_auto_url_mirror = 'https://astroconda.org/aux/astropy_mirror/iers_a_2/finals2000A.all'
 
 from scipy.constants import codata 
 lightvel = codata.value('speed of light in vacuum') #for barycorr
@@ -49,6 +50,9 @@ def dimensions(arm):
     return M, R
 
 def read_data_from_fits(filelist, arm='vis', starname=None):
+    start_time = time()
+    print("1", "{0:.2f} minutes".format((time() - start_time)/60.0))
+    start_time = time()
     names = pd.read_csv('carmenes_aux_files/name_conversion_list.csv')
     name_dict = dict(zip(names['#Karmn'], names['Name']))
     # input : a list of filenames
@@ -79,6 +83,8 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
         jd_mid = jd_start.jd + sp[0].header['HIERARCH CARACAL TMEAN'] * 1/(24*60*60)
         dates_utc[n] = jd_mid
         # for nir ignore all dates before 2016. recommended by Adrian
+        print("2", "{0:.2f} minutes".format((time() - start_time)/60.0))
+        start_time = time()
         date = bary.JDUTC_to_BJDTDB(jd_mid, starname)[0]
         if date >=2457754.5:#1 JAN 2017
             dates[n] = date
@@ -93,9 +99,12 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
                 print("{} not recognized. valid options are: \"vis\" or"
                 " \"nir\"".format(arm))
                 return
-            
+        print("3", "{0:.2f} minutes".format((time() - start_time)/60.0))
+        start_time = time()
         bervs[n] = bary.get_BC_vel(jd_mid, starname=starname, lat=_lat,
                                    longi=_lon, alt=_elevation)[0]  # m/s
+        print("4", "{0:.2f} minutes".format((time() - start_time)/60.0))
+        start_time = time()
         airms[n] = sp[0].header['AIRMASS']
         try:
             wave = sp['WAVE'].data
@@ -113,6 +122,8 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
             for l in range(len(data[r][n,:])):
                 lambda_drifts = lambda_drift(wave[r, l], drifts[n])
             xs[r][n, :] = wave[r, :] - lambda_drifts
+        print("5", "{0:.2f} minutes".format((time() - start_time)/60.0))
+        start_time = time()
 
     # delete data with missing attributes:
     for r in range(R):
@@ -192,9 +203,9 @@ def split_orders_file(filename):
                     del g[key]
                 g.create_dataset(key, data = temp)
                 
-def make_data(starname, arm, data_directory):
+def make_data(starname, arm, data_directory, simbad_name = None):
     filelist = glob.glob(data_directory + 'CARM_raw_data/{0}/*sci-gtoc-{1}_A.fits'.format(starname, arm))
-    data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname= None)
+    data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname= simbad_name)
     hdffile = data_directory+'{0}_{1}_drift_shift_e2ds.hdf5'.format(starname, arm)
     write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc, filelist, hdffile)
     if arm == "nir":
@@ -205,14 +216,18 @@ def make_data(starname, arm, data_directory):
 if __name__ == "__main__":
     data_directory="../data/"
     
-    
-    
-    if True: # GJ876 :vis
-        starname = "GJ436"
+    if True: # GJ3473? / G050-16A / G 50-16 inn SIMBAD :vis
+        starname = "GJ3473"
+        simbad_name = "G 50-16"
         arm = "vis"
-        make_data(starname, arm, data_directory)
+        make_data(starname, arm, data_directory, simbad_name)
+    
+    #if True: # GJ436 :vis
+        #starname = "GJ436"
+        #arm = "vis"
+        #make_data(starname, arm, data_directory)
         
-    if True: # GJ876 :nir
-        starname = "GJ436"
-        arm = "nir"
-        make_data(starname, arm, data_directory)
+    #if True: # GJ436 :nir
+        #starname = "GJ436"
+        #arm = "nir"
+        #make_data(starname, arm, data_directory)

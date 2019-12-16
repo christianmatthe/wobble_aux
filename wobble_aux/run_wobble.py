@@ -241,7 +241,8 @@ def run_wobble(parameters):
                        parameters = p
                        )
     epochs_list = p.epochs_list = data.epochs.tolist()
-    orders_list = p.orders_list = data.orders.tolist()
+    #orders_list = p.orders_list = data.orders.tolist() #too agressive in visible
+    orders_list = p.orders_list = np.arange(p.start, p.end).tolist()
     
     
     #Loop over chunks
@@ -276,7 +277,16 @@ def run_wobble(parameters):
 
 
 if __name__ == "__main__":
-    
+    parameters = Parameters(starname = "GJ3473",
+                            data_suffix = "_vis_drift_shift",
+                            start = 11,
+                            end = 53,
+                            chunk_size = 5,
+                            niter = 160,
+                            reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
+                            reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
+                            output_suffix = "l4_reg",
+                            plot_continuum = True)
 
     #parameters = Parameters(starname = "GJ436",
                             #data_suffix = "_vis_drift_shift",
@@ -302,17 +312,17 @@ if __name__ == "__main__":
                             #)
     
     #NIR test
-    parameters = Parameters(starname = "GJ1148",
-                        data_suffix = "_nir_drift_shift_split",
-                        start = 0,
-                        end = 56,
-                        chunk_size = 5,
-                        niter = 160,
-                        reg_file_star =  'regularization/flat_reg_star.hdf5',
-                        reg_file_t = 'regularization/flat_reg_t.hdf5',
-                        output_suffix = 'test_nir_continuum_0.5down_1up',
-                        plot_continuum = True
-                        )
+    #parameters = Parameters(starname = "GJ1148",
+                        #data_suffix = "_nir_drift_shift_split",
+                        #start = 0,
+                        #end = 56,
+                        #chunk_size = 5,
+                        #niter = 160,
+                        #reg_file_star =  'regularization/flat_reg_star.hdf5',
+                        #reg_file_t = 'regularization/flat_reg_t.hdf5',
+                        #output_suffix = 'test_nir_continuum_0.5down_1up',
+                        #plot_continuum = True
+                        #)
     
     #parameters = Parameters(starname = "GJ1148",
                         #data_suffix = "_nir_drift_shift_split",
