@@ -44,7 +44,9 @@ def doppler(v, tensors=True):
         return np.sqrt(frac)
 
 
-def fit_continuum(x, y, ivars, order=6, nsigma=[0.3,3.0], maxniter=50):
+def fit_continuum(x, y, ivars, order=6,
+                  nsigma=[0.3,3.0],
+                  maxniter=50):
     """Fit the continuum using sigma clipping
 
     Args:
@@ -62,7 +64,20 @@ def fit_continuum(x, y, ivars, order=6, nsigma=[0.3,3.0], maxniter=50):
     m = np.ones(len(x), dtype=bool)
     for i in range(maxniter):
         m[ivars == 0] = 0  # mask out the bad pixels
-        w = np.linalg.solve(np.dot(A[m].T, A[m]), np.dot(A[m].T, y[m]))
+        #w = np.linalg.solve(np.dot(A[m].T, A[m]), np.dot(A[m].T, y[m]))
+        
+        ###for diagnosis of numpy.linalg.LinAlgError: Singular matrix
+        try:
+            w = np.linalg.solve(np.dot(A[m].T, A[m]), np.dot(A[m].T, y[m]))
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+            print(A, y)
+            print(A.shape, y.shape)
+            print("unsing mask m:")
+            print(A[m], y[m])
+            print(A[m].shape, y[m].shape)
+        ###
+            
         mu = np.dot(A, w)
         resid = y - mu
         sigma = np.sqrt(np.nanmedian(resid**2))

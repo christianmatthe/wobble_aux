@@ -205,6 +205,7 @@ class Data(object):
         if plot_continuum:
             os.makedirs(plot_dir_continuum, exist_ok = True)
         order = p.continuum_order
+        nsigma = p.continuum_nsigma
         #TODO make this not Hard Coded
         file_dir = os.path.dirname(__file__)
         telluric_mask_file = file_dir + "/"+"../../../wobble_aux/carmenes_aux_files/" + "telluric_mask_carm_short.dat"
@@ -246,7 +247,7 @@ class Data(object):
                 #fit = fit_continuum(xs_deleted[r][n], ys_deleted[r][n], ivars_deleted[r][n], order = order
                                 ##, **kwargs
                                 #)
-                fit = fit_continuum(xs_masked[r][n].compressed(), ys_masked[r][n].compressed(), ivars_masked[r][n].compressed(), order = order
+                fit = fit_continuum(xs_masked[r][n].compressed(), ys_masked[r][n].compressed(), ivars_masked[r][n].compressed(), order = order, nsigma = nsigma
                                     #, **kwargs
                                     ) #pass compressed arrays, to get rid of masked sections
                 #fit = fit_continuum(xs_masked[r][n], ys_masked[r][n], ivars_masked[r][n], order = order

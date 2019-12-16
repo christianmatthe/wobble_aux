@@ -23,6 +23,7 @@ temp_dir  = p.temp_dir
 plot_dir  = p.plot_dir
 start_time = p.start_time
 epochs_list = p.epochs_list
+orders_list = p.orders_list
 chunks  = p.chunks
 data_file = p.data_file
 
@@ -34,11 +35,17 @@ start_order = chunks[i, 0]
 end_order = chunks[i, 1]
 
 print("running wobble on star {0} with K_star = {1}, K_t = {2}, orders[{3},{4})".format(p.starname, p.K_star, p.K_t, start_order, end_order))
-orders = np.arange(start_order, end_order)
-data = wobble.Data(data_file, orders=orders, epochs=epochs_list, min_flux=10**-5, min_snr=0,
+#orders = np.arange(start_order, end_order)
+#Take intersection of chunk orders and order list to drop orders previously cut
+orders = list(set([x for x in range(start_order, end_order)]) & set(orders_list))
+print("orders: ", orders)
+data = wobble.Data(data_file, orders=orders, epochs=epochs_list, min_flux=10**-5, 
+                   min_snr=0,
                    parameters = p
                    )
+print("data.R: ", data.R)
 results = wobble.Results(data=data)
+print("results.R: ", results.R)
 
 print("data loaded")
 print("time elapsed: {0:.2f} min".format((time() - start_time)/60.0))

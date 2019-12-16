@@ -47,8 +47,8 @@ def results_file_stitch(start, end, chunk_size, results_file, chunk_dir):
     
     #replace number of orders since chunk will not have all of them
     with h5py.File(results_file, 'r+') as f:
-        n_orders = end-start  # note this is not the number of optimized orders if any orders  where dropped
-        f['R'][()] = n_orders
+        #n_orders = end-start  # note this is not the number of optimized orders if any orders  where dropped
+        #f['R'][()] = n_orders
         
         #append orders from other chunks
         if len(chunks) > 1:
@@ -58,6 +58,9 @@ def results_file_stitch(start, end, chunk_size, results_file, chunk_dir):
                 end_order = chunks[i, 1]
                 filename_chunk = file_chunk_name(start_order, end_order, chunk_dir)
                 with h5py.File(filename_chunk,'r') as g:
+                    #update total order number
+                    f['R'][()] = f['R'][()] + g['R'][()]
+                    n_orders = f['R'][()]
                     # append new order numbers
                     orders = f['orders'][()]
                     del  f['orders'] #workaround to edit dimensions of entry in h5py file
@@ -121,6 +124,8 @@ class Parameters:
     continuum_order : `int` (default `1`)
         (wobble default is 6)
         order of the polynomial used for normalizing the spectra
+    continuum_nsigma : [`float`, `float`] (default `[0.5,1]`)
+        data points this many sigma deviations [down, up] from the continuum fit are cut every step
     plot_continuum : `bool` (default `False`)
         whether or not to output plots of the continua during data import (Note: a LOT of plots (orders*epochs))
         
@@ -145,6 +150,7 @@ class Parameters:
                  min_snr = 60,
                  plots = True,
                  continuum_order = 1,
+                 continuum_nsigma = [0.5,1],
                  plot_continuum  = False
                  ):
         self.starname = starname
@@ -163,6 +169,7 @@ class Parameters:
         self.min_snr = min_snr
         self.plots = plots
         self.continuum_order = continuum_order
+        self.continuum_nsigma = continuum_nsigma
         self.plot_continuum  = plot_continuum
         '''
         self.dictionary = {
@@ -234,6 +241,7 @@ def run_wobble(parameters):
                        parameters = p
                        )
     epochs_list = p.epochs_list = data.epochs.tolist()
+    orders_list = p.orders_list = data.orders.tolist()
     
     
     #Loop over chunks
@@ -279,17 +287,44 @@ if __name__ == "__main__":
                             #reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
                             #reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
                             #output_suffix = "git_run_wobble_test0")
+                            
     #quick example : use as standart test?
-    parameters = Parameters(starname = "GJ436",
-                            data_suffix = "_vis_drift_shift",
-                            start = 30,
-                            end = 34,
-                            chunk_size = 2,
-                            niter = 160,
-                            reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
-                            reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
-                            output_suffix = "test_2_continua",
-                            plot_continuum = False
-                            )
+    #parameters = Parameters(starname = "GJ436",
+                            #data_suffix = "_vis_drift_shift",
+                            #start = 30,
+                            #end = 34,
+                            #chunk_size = 2,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
+                            #reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
+                            #output_suffix = "test_2_continua",
+                            #plot_continuum = False
+                            #)
+    
+    #NIR test
+    parameters = Parameters(starname = "GJ1148",
+                        data_suffix = "_nir_drift_shift_split",
+                        start = 0,
+                        end = 56,
+                        chunk_size = 5,
+                        niter = 160,
+                        reg_file_star =  'regularization/flat_reg_star.hdf5',
+                        reg_file_t = 'regularization/flat_reg_t.hdf5',
+                        output_suffix = 'test_nir_continuum_0.5down_1up',
+                        plot_continuum = True
+                        )
+    
+    #parameters = Parameters(starname = "GJ1148",
+                        #data_suffix = "_nir_drift_shift_split",
+                        #start = 35,
+                        #end = 40,
+                        #chunk_size = 5,
+                        #niter = 160,
+                        #reg_file_star =  'regularization/flat_reg_star.hdf5',
+                        #reg_file_t = 'regularization/flat_reg_t.hdf5',
+                        #output_suffix = 'order_cut_test',
+                        #plot_continuum = True
+                        #)
+    
     
     run_wobble(parameters)

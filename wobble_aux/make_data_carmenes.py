@@ -13,7 +13,7 @@ import os
 import barycorrpy as bary
 import pandas as pd
 
-#https://github.com/astropy/astropy/issues/8981
+#https://github.com/astropy/astropy/issues/8981 alternate mirrors for iers
 from astropy.utils import iers
 from astropy.utils.iers import conf as iers_conf
 #iers_conf.iers_auto_url
