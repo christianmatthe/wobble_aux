@@ -292,8 +292,8 @@ def run_wobble(parameters):
                        parameters = p
                        )
     epochs_list = p.epochs_list = data.epochs.tolist()
-    orders_list = p.orders_list = data.orders.tolist() #too agressive in visible
-    #orders_list = p.orders_list = np.arange(p.start, p.end).tolist()
+    #orders_list = p.orders_list = data.orders.tolist() #too agressive in visible
+    orders_list = p.orders_list = np.arange(p.start, p.end).tolist()
     
     
     chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size, p.orders_list)
@@ -338,8 +338,19 @@ if __name__ == "__main__":
                             niter = 160,
                             reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
                             reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
-                            output_suffix = "continuum_recheck",
+                            output_suffix = "recheck_all_orders",
                             plot_continuum = True)
+    
+    #parameters = Parameters(starname = "GJ1148",
+                            #data_suffix = "_vis_drift_shift",
+                            #start = 11,
+                            #end = 53,
+                            #chunk_size = 5,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
+                            #reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
+                            #output_suffix = "continuum_recheck",
+                            #plot_continuum = True)
     
     #parameters = Parameters(starname = "GJ1148",
                             #data_suffix = "_vis_drift_shift",
