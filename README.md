@@ -1,6 +1,8 @@
 # wobble_aux
 auxiliary code meant to work with megbedell/wobble on CARMENES data
 
+Python environment Setup Instructions:
+
 • conda create –name fresh env
 
 • conda activate fresh env
