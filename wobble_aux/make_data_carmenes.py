@@ -13,6 +13,7 @@ import os
 import barycorrpy as bary
 import pandas as pd
 from time import time
+from tqdm import tqdm
 
 ##https://github.com/astropy/astropy/issues/8981 alternate mirrors for iers (old)
 #from astropy.utils import iers
@@ -51,7 +52,6 @@ def dimensions(arm):
 
 def read_data_from_fits(filelist, arm='vis', starname=None):
     start_time = time()
-    print("1", "{0:.2f} minutes".format((time() - start_time)/60.0))
     start_time = time()
     names = pd.read_csv('carmenes_aux_files/name_conversion_list.csv')
     name_dict = dict(zip(names['#Karmn'], names['Name']))
@@ -63,7 +63,7 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
     xs = [np.zeros((N, M)) for r in range(R)]
     empty = np.array([], dtype=int)
     pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N) ,np.zeros(N)
-    for n, f in enumerate(filelist):
+    for n, f in enumerate(tqdm(filelist)):
         sp = fits.open(f)
         try:
             pipeline_rvs[n] = sp[0].header['HIERARCH CARACAL SERVAL RV'] * 1.e3 # m/s
@@ -83,9 +83,10 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
         jd_mid = jd_start.jd + sp[0].header['HIERARCH CARACAL TMEAN'] * 1/(24*60*60)
         dates_utc[n] = jd_mid
         # for nir ignore all dates before 2016. recommended by Adrian
-        print("2", "{0:.2f} minutes".format((time() - start_time)/60.0))
         start_time = time()
-        date = bary.JDUTC_to_BJDTDB(jd_mid, starname)[0]
+        date = bary.JDUTC_to_BJDTDB(jd_mid, starname,
+                                                           leap_update = False #HACK barycorrpy issue 27
+                                                           )[0]
         if date >=2457754.5:#1 JAN 2017
             dates[n] = date
         else:
@@ -99,11 +100,11 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
                 print("{} not recognized. valid options are: \"vis\" or"
                 " \"nir\"".format(arm))
                 return
-        print("3", "{0:.2f} minutes".format((time() - start_time)/60.0))
         start_time = time()
         bervs[n] = bary.get_BC_vel(jd_mid, starname=starname, lat=_lat,
-                                   longi=_lon, alt=_elevation)[0]  # m/s
-        print("4", "{0:.2f} minutes".format((time() - start_time)/60.0))
+                                   longi=_lon, alt=_elevation,
+                                                           leap_update = False #HACK barycorrpy issue 27
+                                                           )[0]  # m/s
         start_time = time()
         airms[n] = sp[0].header['AIRMASS']
         try:
@@ -122,7 +123,6 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
             for l in range(len(data[r][n,:])):
                 lambda_drifts = lambda_drift(wave[r, l], drifts[n])
             xs[r][n, :] = wave[r, :] - lambda_drifts
-        print("5", "{0:.2f} minutes".format((time() - start_time)/60.0))
         start_time = time()
 
     # delete data with missing attributes:
@@ -216,11 +216,16 @@ def make_data(starname, arm, data_directory, simbad_name = None):
 if __name__ == "__main__":
     data_directory="../data/"
     
-    if True: # GJ3473? / G050-16A / G 50-16 inn SIMBAD :vis
-        starname = "GJ3473"
-        simbad_name = "G 50-16"
+    if True: # GJ1148 :vis
+        starname = "GJ1148"
         arm = "vis"
-        make_data(starname, arm, data_directory, simbad_name)
+        make_data(starname, arm, data_directory)
+    
+    #if True: # GJ3473? / G050-16A / G 50-16 inn SIMBAD :vis
+        #starname = "GJ3473"
+        #simbad_name = "G 50-16"
+        #arm = "vis"
+        #make_data(starname, arm, data_directory, simbad_name)
     
     #if True: # GJ436 :vis
         #starname = "GJ436"

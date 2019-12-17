@@ -37,7 +37,8 @@ end_order = chunks[i, 1]
 print("running wobble on star {0} with K_star = {1}, K_t = {2}, orders[{3},{4})".format(p.starname, p.K_star, p.K_t, start_order, end_order))
 #orders = np.arange(start_order, end_order)
 #Take intersection of chunk orders and order list to drop orders previously cut
-orders = list(set([x for x in range(start_order, end_order)]) & set(orders_list))
+#orders = list(set([x for x in range(start_order, end_order)]) & set(orders_list))
+orders = chunks[i]
 print("orders: ", orders)
 data = wobble.Data(data_file, orders=orders, epochs=epochs_list, min_flux=10**-5, 
                    min_snr=0,

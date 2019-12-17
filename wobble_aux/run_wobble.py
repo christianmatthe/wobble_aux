@@ -13,25 +13,35 @@ def file_chunk_name(start_order, end_order, chunk_dir):
     results_file_chunk_name = chunk_dir + 'orders[{0},{1})'.format(start_order, end_order) + '.hdf5' #this name must be same as in chunkscript
     return results_file_chunk_name
 
-def chunk_list(start, end, chunk_size):
-    chunks=np.asarray([[]])
-    #fewer than chunksize orders
-    if start + chunk_size >= end:
-        chunks = np.asarray([[start, end]])
+def chunk_list(start, end, chunk_size, order_list = None):
+    #make chunks only from order list
+    if order_list is not None:
+        def chunks_from_list(lst, n):
+            """Yield successive n-sized chunks from lst."""
+            for i in range(0, len(lst), n):
+                yield lst[i:i + n]
+        chunks = list(chunks_from_list(order_list, chunk_size))
     else:
-        for i in range(start, end, chunk_size):
-            if i == start:
-                start_order = i
-                end_order = i + chunk_size
-                chunks = np.asarray([[start_order, end_order]])
-            else:
-                if i + chunk_size < end:
-                    start_order = i
-                    end_order = i + chunk_size
-                else:
-                    start_order = i
-                    end_order = end
-                chunks = np.append(chunks, [[start_order, end_order]], axis=0) 
+        raise Exception("order_list must be provided to chunk_list()")
+        #legacy 
+        #chunks=np.asarray([[]])
+        ##fewer than chunksize orders
+        #if start + chunk_size >= end:
+            #chunks = np.asarray([[start, end]])
+        #else:
+            #for i in range(start, end, chunk_size):
+                #if i == start:
+                    #start_order = i
+                    #end_order = i + chunk_size
+                    #chunks = np.asarray([[start_order, end_order]])
+                #else:
+                    #if i + chunk_size < end:
+                        #start_order = i
+                        #end_order = i + chunk_size
+                    #else:
+                        #start_order = i
+                        #end_order = end
+                    #chunks = np.append(chunks, [[start_order, end_order]], axis=0) 
     return chunks
 
 def results_file_stitch(start, end, chunk_size, results_file, chunk_dir):
@@ -202,7 +212,8 @@ def reg_chunk(chunk, reg_file_star, reg_file_t):
     with h5py.File(reg_file_star,'r') as f:
         with h5py.File(reg_file_star_chunk,'w') as g:
             for key in list(f.keys()):
-                    temp = f[key][()][start_chunk : end_chunk]
+                    #temp = f[key][()][start_chunk : end_chunk]
+                    temp = f[key][()][chunk]
                     if key in list(g.keys()):
                         del g[key]
                     g.create_dataset(key, data = temp)
@@ -210,7 +221,8 @@ def reg_chunk(chunk, reg_file_star, reg_file_t):
     with h5py.File(reg_file_t,'r') as f:
         with h5py.File(reg_file_t_chunk,'w') as g:
             for key in list(f.keys()):
-                    temp = f[key][()][start_chunk : end_chunk]
+                    #temp = f[key][()][start_chunk : end_chunk]
+                    temp = f[key][()][chunk]
                     if key in list(g.keys()):
                         del g[key]
                     g.create_dataset(key, data = temp)
@@ -235,8 +247,8 @@ def run_wobble(parameters):
     os.makedirs(plot_dir, exist_ok = True)
     
     start_time = p.start_time = time()
-    chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size)
     #generate epoch list
+    print("Loading data. May take a few minutes")
     data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr,
                        parameters = p
                        )
@@ -245,6 +257,7 @@ def run_wobble(parameters):
     #orders_list = p.orders_list = np.arange(p.start, p.end).tolist()
     
     
+    chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size, p.order_list)
     #Loop over chunks
     for i in range(len(chunks)):
         #pass parameters object to chunk script
@@ -277,7 +290,8 @@ def run_wobble(parameters):
 
 
 if __name__ == "__main__":
-    parameters = Parameters(starname = "GJ3473",
+    
+    parameters = Parameters(starname = "GJ1148",
                             data_suffix = "_vis_drift_shift",
                             start = 11,
                             end = 53,
@@ -285,9 +299,20 @@ if __name__ == "__main__":
                             niter = 160,
                             reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
                             reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
-                            min_snr = 10,
-                            output_suffix = "l4_reg_snr_10",
-                            plot_continuum = False)
+                            output_suffix = "continuum_recheck",
+                            plot_continuum = True)
+    
+    #parameters = Parameters(starname = "GJ3473",
+                            #data_suffix = "_vis_drift_shift",
+                            #start = 11,
+                            #end = 53,
+                            #chunk_size = 20,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
+                            #reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
+                            #min_snr = 10,
+                            #output_suffix = "l4_reg_snr_10",
+                            #plot_continuum = False)
     
     #parameters = Parameters(starname = "GJ3473",
                             #data_suffix = "_vis_drift_shift",
