@@ -10,7 +10,7 @@ import dill
 
 #Reproduce combine results first: functions required for runnign wobble in small chunks of orders so as not to overflow RAM
 def file_chunk_name(start_order, end_order, chunk_dir):
-    results_file_chunk_name = chunk_dir + 'orders[{0},{1})'.format(start_order, end_order) + '.hdf5' #this name must be same as in chunkscript
+    results_file_chunk_name = chunk_dir + 'orders[{0},{1}]'.format(start_order, end_order) + '.hdf5' #this name must be same as in chunkscript
     return results_file_chunk_name
 
 def chunk_list(start, end, chunk_size, order_list = None):
@@ -44,14 +44,53 @@ def chunk_list(start, end, chunk_size, order_list = None):
                     #chunks = np.append(chunks, [[start_order, end_order]], axis=0) 
     return chunks
 
-def results_file_stitch(start, end, chunk_size, results_file, chunk_dir):
+#def results_file_stitch(start, end, chunk_size, results_file, chunk_dir):
+    #"""turns chunks into one continuous file, as if wobble had been run in one piece"""
+    #print("Writing results to {0}".format(results_file))
+    ##initialize results_file as copy of first chunk_list
+    ## NOTE files must have the same epochs
+    #chunks = chunk_list(start, end, chunk_size)
+    #start_order = chunks[0, 0]
+    #end_order = chunks[0, 1]
+    #filename_chunk = file_chunk_name(start_order, end_order, chunk_dir)
+    #shutil.copy(filename_chunk, results_file)
+    
+    ##replace number of orders since chunk will not have all of them
+    #with h5py.File(results_file, 'r+') as f:
+        ##n_orders = end-start  # note this is not the number of optimized orders if any orders  where dropped
+        ##f['R'][()] = n_orders
+        
+        ##append orders from other chunks
+        #if len(chunks) > 1:
+            #for i in range(1, len(chunks)):
+                ##load files and combine them
+                #start_order = chunks[i, 0]
+                #end_order = chunks[i, 1]
+                #filename_chunk = file_chunk_name(start_order, end_order, chunk_dir)
+                #with h5py.File(filename_chunk,'r') as g:
+                    ##update total order number
+                    #f['R'][()] = f['R'][()] + g['R'][()]
+                    #n_orders = f['R'][()]
+                    ## append new order numbers
+                    #orders = f['orders'][()]
+                    #del  f['orders'] #workaround to edit dimensions of entry in h5py file
+                    #f['orders'] = np.append(orders, g['orders'][()])
+                    #key_list = list(f.keys())
+                    #for r in range(n_orders):
+                        #if 'order{0}'.format(r) not in key_list: #find first intex not already present
+                            #for r_chunk in range(g['R'][()]):
+                                #r_tot  = r + r_chunk
+                                #g.copy('order{0}'.format(r_chunk), f, name = 'order{0}'.format(r_tot))
+                                
+                            #break
+                        
+def results_file_stitch(chunks, results_file, chunk_dir):
     """turns chunks into one continuous file, as if wobble had been run in one piece"""
     print("Writing results to {0}".format(results_file))
     #initialize results_file as copy of first chunk_list
     # NOTE files must have the same epochs
-    chunks = chunk_list(start, end, chunk_size)
     start_order = chunks[0, 0]
-    end_order = chunks[0, 1]
+    end_order = chunks[0, -1]
     filename_chunk = file_chunk_name(start_order, end_order, chunk_dir)
     shutil.copy(filename_chunk, results_file)
     
