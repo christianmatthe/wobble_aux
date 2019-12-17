@@ -89,8 +89,8 @@ def results_file_stitch(chunks, results_file, chunk_dir):
     print("Writing results to {0}".format(results_file))
     #initialize results_file as copy of first chunk_list
     # NOTE files must have the same epochs
-    start_order = chunks[0, 0]
-    end_order = chunks[0, -1]
+    start_order = chunks[0][0]
+    end_order = chunks[0][-1]
     filename_chunk = file_chunk_name(start_order, end_order, chunk_dir)
     shutil.copy(filename_chunk, results_file)
     
@@ -103,8 +103,8 @@ def results_file_stitch(chunks, results_file, chunk_dir):
         if len(chunks) > 1:
             for i in range(1, len(chunks)):
                 #load files and combine them
-                start_order = chunks[i, 0]
-                end_order = chunks[i, 1]
+                start_order = chunks[i][0]
+                end_order = chunks[i][-1]
                 filename_chunk = file_chunk_name(start_order, end_order, chunk_dir)
                 with h5py.File(filename_chunk,'r') as g:
                     #update total order number
@@ -243,8 +243,8 @@ class Parameters:
 
 def reg_chunk(chunk, reg_file_star, reg_file_t):
     """Create subsets of the regularization files to be used for a chunk"""
-    start_chunk = int(chunk[0])
-    end_chunk = int(chunk[1])
+    #start_chunk = int(chunk[0])
+    #end_chunk = int(chunk[-1])
     #NOTE assumes reg file starts at order 0 TODO implenent check that file is 61 orders long i.e. that reg file is valid
     #TODO Remove hardcoded temp location?
     reg_file_star_chunk = 'regularization/temp_star_chunk.hdf5'
@@ -296,7 +296,7 @@ def run_wobble(parameters):
     #orders_list = p.orders_list = np.arange(p.start, p.end).tolist()
     
     
-    chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size, p.order_list)
+    chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size, p.orders_list)
     #Loop over chunks
     for i in range(len(chunks)):
         #pass parameters object to chunk script
@@ -307,7 +307,7 @@ def run_wobble(parameters):
         os.system("python3 chunk.py")
         
     print("all chunks optimized: writing combined file") 
-    results_file_stitch(p.start, p.end, p.chunk_size, results_file, temp_dir)
+    results_file_stitch(chunks, results_file, temp_dir)
     
     #Combine orders
     results = wobble.Results(filename = results_file)
@@ -340,6 +340,17 @@ if __name__ == "__main__":
                             reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
                             output_suffix = "continuum_recheck",
                             plot_continuum = True)
+    
+    #parameters = Parameters(starname = "GJ1148",
+                            #data_suffix = "_vis_drift_shift",
+                            #start = 30,
+                            #end = 34,
+                            #chunk_size = 1,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
+                            #reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
+                            #output_suffix = "quickcheck",
+                            #plot_continuum = False)
     
     #parameters = Parameters(starname = "GJ3473",
                             #data_suffix = "_vis_drift_shift",

@@ -31,8 +31,8 @@ data_file = p.data_file
 ###Start of wobble Chunk
 start_time_chunk = time()
 reg_file_star_chunk, reg_file_t_chunk = reg_chunk(chunks[i], p.reg_file_star, p.reg_file_t)
-start_order = chunks[i, 0]
-end_order = chunks[i, -1]
+start_order = chunks[i][0]
+end_order = chunks[i][-1]
 
 print("running wobble on star {0} with K_star = {1}, K_t = {2}, orders[{3},{4})".format(p.starname, p.K_star, p.K_t, start_order, end_order))
 #orders = np.arange(start_order, end_order)
