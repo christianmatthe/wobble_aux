@@ -40,7 +40,7 @@
 *.fits
 
 # do not copy input and  output directories
-data
+#data
 results
 
 # install and build-related things
