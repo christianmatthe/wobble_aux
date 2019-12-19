@@ -17,4 +17,6 @@ Python environment Setup Instructions (WIP):
 
 •install packages from requirements.txt (numpy, scipy, matplotllib, (tensorflow),tqdm, h5py, astropy)
 
-•additional  required  packages:   barycorrpy(apparently  not  conda  installable?),pandas, [conda install -c astropy astroquery], dill, (numpy=1.16 if deprecationwarning, not compatible with ”extrapolate”) numpy =1.17•wobbletest to check basic functionality
+•additional  required  packages:   barycorrpy(apparently  not  conda  installable?),pandas, [conda install -c astropy astroquery], dill, (numpy=1.16 if deprecationwarning, not compatible with ”extrapolate”) numpy =1.17
+
+•wobbletest to check basic functionality
