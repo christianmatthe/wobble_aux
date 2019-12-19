@@ -1,4 +1,3 @@
-# Meant to recreate functionality of optimize_top_3.1.2._data_suffix but without calling subscipts via os.system
 import numpy as np
 import shutil
 from time import time
@@ -329,6 +328,19 @@ def run_wobble(parameters):
 
 
 if __name__ == "__main__":
+    ########### check flat reg loop4 vs loop3
+    #GJ1148
+    parameters = Parameters(starname = "GJ1148",
+                            data_suffix = "_vis_drift_shift",
+                            start = 11,
+                            end = 53,
+                            chunk_size = 5,
+                            niter = 160,
+                            reg_file_star =  'regularization/flat_reg_star.hdf5',
+                            reg_file_t = 'regularization/flat_reg_t.hdf5',
+                            output_suffix = "flat_l4",
+                            plot_continuum = True)
+    run_wobble(parameters)
     
     parameters = Parameters(starname = "GJ1148",
                             data_suffix = "_vis_drift_shift",
@@ -336,10 +348,47 @@ if __name__ == "__main__":
                             end = 53,
                             chunk_size = 5,
                             niter = 160,
-                            reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
-                            reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
-                            output_suffix = "recheck_all_orders",
+                            reg_file_star =  'regularization/flat_reg_l3_star.hdf5',
+                            reg_file_t = 'regularization/flat_reg_l3_t.hdf5',
+                            output_suffix = "flat_l3",
                             plot_continuum = True)
+    run_wobble(parameters)
+    #GJ436
+    parameters = Parameters(starname = "GJ436",
+                            data_suffix = "_vis_drift_shift",
+                            start = 11,
+                            end = 53,
+                            chunk_size = 5,
+                            niter = 160,
+                            reg_file_star =  'regularization/flat_reg_star.hdf5',
+                            reg_file_t = 'regularization/flat_reg_t.hdf5',
+                            output_suffix = "flat_l4",
+                            plot_continuum = True)
+    run_wobble(parameters)
+    
+    parameters = Parameters(starname = "GJ436",
+                            data_suffix = "_vis_drift_shift",
+                            start = 11,
+                            end = 53,
+                            chunk_size = 5,
+                            niter = 160,
+                            reg_file_star =  'regularization/flat_reg_l3_star.hdf5',
+                            reg_file_t = 'regularization/flat_reg_l3_t.hdf5',
+                            output_suffix = "flat_l3",
+                            plot_continuum = True)
+    run_wobble(parameters)
+    
+    ###########
+    #parameters = Parameters(starname = "GJ1148",
+                            #data_suffix = "_vis_drift_shift",
+                            #start = 11,
+                            #end = 53,
+                            #chunk_size = 5,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/GJ436_orderwise_avcn_l4_star.hdf5',
+                            #reg_file_t = 'regularization/GJ436_orderwise_avcn_l4_t.hdf5',
+                            #output_suffix = "recheck_all_orders",
+                            #plot_continuum = True)
     
     #parameters = Parameters(starname = "GJ1148",
                             #data_suffix = "_vis_drift_shift",
@@ -435,4 +484,4 @@ if __name__ == "__main__":
                         #)
     
     
-    run_wobble(parameters)
+    #run_wobble(parameters)

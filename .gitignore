@@ -37,6 +37,7 @@
 *.vels
 *.csv
 *.hdf5
+*.fits
 
 # do not copy input and  output directories
 data
@@ -61,13 +62,16 @@ __pycache__
 
 #include regularization files
 #!wobble_aux/regularization/*.hdf5
-#Pseudodefaults
+#include Pseudodefault regularizations
 !wobble_aux/regularization/GJ436_orderwise_avcn_l4_star.hdf5
 !wobble_aux/regularization/GJ436_orderwise_avcn_l4_t.hdf5
+!wobble_aux/regularization/flat_reg_l3_star.hdf5
+!wobble_aux/regularization/flat_reg_l3_t.hdf5
 wobble_aux/regularization/temp_star_chunk.hdf5
 wobble_aux/regularization/temp_t_chunk.hdf5
 
 #stored objects
 *.pkl
+*.pickle
 
 
