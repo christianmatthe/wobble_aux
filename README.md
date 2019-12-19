@@ -11,7 +11,9 @@ Python environment Setup Instructions (WIP):
 
 •git clone https://github.com/christianmatthe/wobble_aux
 
-•navigate to wobble folder (Wobble19_03_2019/wobble/wobble)•python setup.py develop
+•navigate to wobble folder (Wobble19_03_2019/wobble/wobble)
+
+•python setup.py develop
 
 •install packages from requirements.txt (numpy, scipy, matplotllib, (tensorflow),tqdm, h5py, astropy)
 
