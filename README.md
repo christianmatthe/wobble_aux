@@ -13,7 +13,7 @@ Python environment Setup Instructions (WIP):
 
 •navigate to wobble folder (Wobble19_03_2019/wobble/wobble)
 
-•python setup.py develop
+•python setup.py develop  (wobble/build folder and wobble/interp/interp\_op.cpython-36m-c86\_64-linux-gnu.so must be removed to before new compile (this is the case in the initial clone))
 
 •install packages from requirements.txt (numpy, scipy, matplotllib, (tensorflow),tqdm, h5py, astropy)
 
