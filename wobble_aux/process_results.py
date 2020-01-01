@@ -7,6 +7,12 @@ from tabulate import tabulate
 from scipy.constants import codata 
 lightvel = codata.value('speed of light in vacuum') #for barycorr
 import os
+import pickle
+
+#https://github.com/astropy/astropy/issues/9427 workaround for broken iers mirror
+from astropy.utils import iers
+iers.Conf.iers_auto_url.set('ftp://cddis.gsfc.nasa.gov/pub/products/iers/finals2000A.all')
+
 # CAHA Coordinates for barycorr
 _lat = 37.2236
 _lon = -2.54625
@@ -39,66 +45,66 @@ def basic_make_vels(vels_dir, results_file):
 '''
 
 #also include corrections
-def make_vels(vels_dir, results_file, serval_dir, carmenes_object_ID, starname, correct_w_for_drift = False):
-    #TODO find Carmencita ID from starname?
-    #Import wobble results
-    wobble_res = h5py.File(results_file, 'r')
-    w_dates = wobble_res['dates'][()]
-    w_dates_utc = wobble_res['dates_utc'][()]
-    w_RVs = wobble_res['star_time_rvs'][()]
-    w_RVs_er = wobble_res['star_time_sigmas'][()]
+#def make_vels(vels_dir, results_file, serval_dir, carmenes_object_ID, starname, correct_w_for_drift = False):
+    ##TODO find Carmencita ID from starname?
+    ##Import wobble results
+    #wobble_res = h5py.File(results_file, 'r')
+    #w_dates = wobble_res['dates'][()]
+    #w_dates_utc = wobble_res['dates_utc'][()]
+    #w_RVs = wobble_res['star_time_rvs'][()]
+    #w_RVs_er = wobble_res['star_time_sigmas'][()]
     
-    w_RVs_barycorr = np.zeros(len(w_dates))
-    for n in tqdm(range(len(w_RVs_barycorr))):
-        try:
-            w_RVs_barycorr[n]=bary.get_BC_vel(w_dates_utc[n], starname=i[0], lat=_lat, longi=_lon, alt=_elevation, zmeas=w_RVs[n]/lightvel,
-                                                           leap_update = False #HACK barycorrpy issue 27
-                                                           )[0]
-        except:
-            print("Barycentric correction during make_vels failed. Not outputting a .vels file")
-            return
-    #import serval results
-    ser_avcn = np.loadtxt(servaldir+ carmenes_object_ID +"/"+ carmenes_object_ID +".avcn.dat")
-    # remove entries with nan in drift
-    ind_finitedrift = np.isfinite(ser_avcn[:,3])
-    ser_avcn = ser_avcn[ind_finitedrift]
+    #w_RVs_barycorr = np.zeros(len(w_dates))
+    #for n in tqdm(range(len(w_RVs_barycorr))):
+        #try:
+            #w_RVs_barycorr[n]=bary.get_BC_vel(w_dates_utc[n], starname=i[0], lat=_lat, longi=_lon, alt=_elevation, zmeas=w_RVs[n]/lightvel,
+                                                           #leap_update = False #HACK barycorrpy issue 27
+                                                           #)[0]
+        #except:
+            #print("Barycentric correction during make_vels failed. Not outputting a .vels file")
+            #return
+    ##import serval results
+    #ser_avcn = np.loadtxt(servaldir+ carmenes_object_ID +"/"+ carmenes_object_ID +".avcn.dat")
+    ## remove entries with nan in drift
+    #ind_finitedrift = np.isfinite(ser_avcn[:,3])
+    #ser_avcn = ser_avcn[ind_finitedrift]
     
-    #8 sa drift, 3 drift, 9 NZP
-    ser_corr = - ser_avcn[:,8] - ser_avcn[:,3] - ser_avcn[:,9] # use with avcn
-    ser_corr_wob = ser_corr
-    #optionally remove drift correction if this has been performed during data file generation
-    if correct_w_for_drift:
-        ser_corr_wob = ser_corr + ser_rvc[:,3]
+    ##8 sa drift, 3 drift, 9 NZP
+    #ser_corr = - ser_avcn[:,8] - ser_avcn[:,3] - ser_avcn[:,9] # use with avcn
+    #ser_corr_wob = ser_corr
+    ##optionally remove drift correction if this has been performed during data file generation
+    #if correct_w_for_drift:
+        #ser_corr_wob = ser_corr + ser_rvc[:,3]
         
-    #match the observation by the JDs -> start with wobble date and find the one with the lowest timediff from serval
-    indices_serval = [] 
-    indices_wobble = []
-    for n in range(len(w_dates)):
-        ind_jd = np.where(np.abs(ser_avcn[:,0]-w_dates[n]) == np.nanmin(np.abs(ser_avcn[:,0]-w_dates[n])))[0][0]
-        if (ser_avcn[ind_jd,0]-w_dates[n])*24*60<20.: #only takes matches closer than 20 minutes
-            indices_serval.append(ind_jd)
-            indices_wobble.append(n)
+    ##match the observation by the JDs -> start with wobble date and find the one with the lowest timediff from serval
+    #indices_serval = [] 
+    #indices_wobble = []
+    #for n in range(len(w_dates)):
+        #ind_jd = np.where(np.abs(ser_avcn[:,0]-w_dates[n]) == np.nanmin(np.abs(ser_avcn[:,0]-w_dates[n])))[0][0]
+        #if (ser_avcn[ind_jd,0]-w_dates[n])*24*60<20.: #only takes matches closer than 20 minutes
+            #indices_serval.append(ind_jd)
+            #indices_wobble.append(n)
             
-    #now set up all the data according to the indices
-    ser_avcn = ser_avcn[indices_serval]
-    ser_corr = ser_corr[indices_serval]
-    ser_corr_wob = ser_corr_wob[indices_serval]
+    ##now set up all the data according to the indices
+    #ser_avcn = ser_avcn[indices_serval]
+    #ser_corr = ser_corr[indices_serval]
+    #ser_corr_wob = ser_corr_wob[indices_serval]
     
-    w_dates = w_dates[indices_wobble]
-    w_RVs_barycorr = w_RVs_barycorr[indices_wobble] + ser_corr_wob
-    w_RVs_er = w_RVs_er[indices_wobble]
+    #w_dates = w_dates[indices_wobble]
+    #w_RVs_barycorr = w_RVs_barycorr[indices_wobble] + ser_corr_wob
+    #w_RVs_er = w_RVs_er[indices_wobble]
     
-    #TODO rigorous error treatement (e.g. for additinal error due to correction)
-    array = np.array([w_dates, w_RVs_original_barycorr, w_RVs_er])#NOTE errors assume additional error due to barycorr is small
-    array = np.ndarray.transpose(array)
+    ##TODO rigorous error treatement (e.g. for additinal error due to correction)
+    #array = np.array([w_dates, w_RVs_original_barycorr, w_RVs_er])#NOTE errors assume additional error due to barycorr is small
+    #array = np.ndarray.transpose(array)
     
-    file_basename, = os.path.splitext(os.path.basename(results_file))
-    np.savetxt(vels_dir + file_basename + '.vels', array, fmt ='%.18f')
+    #file_basename, = os.path.splitext(os.path.basename(results_file))
+    #np.savetxt(vels_dir + file_basename + '.vels', array, fmt ='%.18f')
     
-    array = np.array([ser_rvc[:,0], ser_rvc[:,1],ser_rvc[:,2]])#NOTE errors assume additional error due to barycorr is small
-    array = np.ndarray.transpose(array)
-    np.savetxt(vels_dir + starname + "_serval_avcn" + '.vels', array, fmt ='%.18f')
-    
+    #array = np.array([ser_rvc[:,0], ser_rvc[:,1],ser_rvc[:,2]])#NOTE errors assume additional error due to barycorr is small
+    #array = np.ndarray.transpose(array)
+    #np.savetxt(vels_dir + starname + "_serval_avcn" + '.vels', array, fmt ='%.18f')
+
 
 #plan: make standart results import function (wobble-Serval cross match)
 class Results_ws():
@@ -126,6 +132,8 @@ class Results_ws():
                  , correct_NZP = True
                  , correct_SA = True
                  ):
+        self.wobble_file = wobble_file
+        self.bary_starname = bary_starname
         #if bary_archive == "/" + "../results/bary_archive/":
             #file_dir = os.path.dirname(os.path.abspath(__file__))
             #print(file_dir )
@@ -139,6 +147,7 @@ class Results_ws():
         w_epochs = wobble_res['epochs'][()]
         w_RVs = wobble_res['star_time_rvs'][()]
         w_RVs_er = wobble_res['star_time_sigmas'][()]
+        w_bervs = wobble_res['bervs'][()]
         #orderwise RVs 
         N_ord = len(w_orders) #should be equivalent to ["R"]
         k=np.arange(N_ord)
@@ -164,7 +173,7 @@ class Results_ws():
         #barycentric correction
         #load barycorrected rvs from pickle archive to save time on recalculting them
         # TODO Isssue in next line
-        w_file_basename, = os.path.splitext(os.path.basename(wobble_file))
+        w_file_basename = os.path.splitext(os.path.basename(wobble_file))[0]
         filename_RVs_barycorr = bary_archive + w_file_basename +"_barycorr.pkl"
         filename_order_RVs_barycorr = bary_archive + w_file_basename +"_barycorr_orders.pkl"
         if load_bary:
@@ -176,7 +185,7 @@ class Results_ws():
             except FileNotFoundError:
                 print("RV file not found, recalculating barycentric corrections")
                 load_bary = False
-        if not load_rvs:
+        if not load_bary:
             w_RVs_barycorr = np.zeros(len(w_dates))
             for n in tqdm(range(len(w_RVs_barycorr))):
                 w_RVs_barycorr[n] = bary.get_BC_vel(w_dates_utc[n], starname = bary_starname, lat=_lat, longi=_lon, alt=_elevation, zmeas = w_RVs[n]/lightvel,
@@ -190,30 +199,30 @@ class Results_ws():
                                                         leap_update = False #HACK barycorrpy issue 27
                                                         )[0]
             if archive:
-                with open(filename_RVs_barycorr) as f:
+                with open(filename_RVs_barycorr, "wb") as f:
                     pickle.dump(w_RVs_barycorr, f)
-                with open(filename_order_RVs_barycorr) as f:
+                with open(filename_order_RVs_barycorr, "wb") as f:
                     pickle.dump(w_order_RVs_barycorr, f)
             
         # Import SERVAL TODO make some of these that aren't strictly necessary for corrections optional
         # TODO replace [i] with carmenes_object_ID
-        ser_avcn = np.loadtxt(servaldir+ carmenes_object_ID +"/"+ carmenes_object_ID +".avcn.dat")
+        ser_avcn = np.loadtxt(serval_dir+ carmenes_object_ID +"/"+ carmenes_object_ID +".avcn.dat")
         #read in also info file, from which we get SNR and airmass
-        ser_info = np.genfromtxt(servaldir+ carmenes_object_ID +"/"+ carmenes_object_ID +".info.cvs", delimiter=";")
+        ser_info = np.genfromtxt(serval_dir+ carmenes_object_ID +"/"+ carmenes_object_ID +".info.cvs", delimiter=";")
         ser_addinfo=np.zeros((len(ser_avcn), 2)) #initializes array
         for n in range(len(ser_avcn)):
             ind_jd = np.where(np.abs(ser_info[:,1]-ser_avcn[n,0]) == np.nanmin(np.abs(ser_info[:,1]-ser_avcn[n,0])))[0][0] #ser_info [:,1] is BJD and so is ser_rvc[n,0] this matches the ones closest to each other
             ser_addinfo[n,0] = ser_info[ind_jd, 3] # SNR
             ser_addinfo[n,1] = ser_info[ind_jd, 8] # Airmass
         #Import serval orderwise Rvs
-        ser_rvo = np.loadtxt(servaldir+ carmenes_object_ID +"/"+ carmenes_object_ID +".rvo.dat")
-        ser_rvo = ser_rvo[ind_finitedrift]
+        ser_rvo = np.loadtxt(serval_dir+ carmenes_object_ID +"/"+ carmenes_object_ID +".rvo.dat")
         
-        ser_rvo_err = np.loadtxt(servaldir+ carmenes_object_ID +"/"+ carmenes_object_ID +".rvo.daterr")
-        ser_rvo_err = ser_rvo_err[ind_finitedrift]
+        ser_rvo_err = np.loadtxt(serval_dir+ carmenes_object_ID +"/"+ carmenes_object_ID +".rvo.daterr")
         # remove entries with nan in drift
         ind_finitedrift = np.isfinite(ser_avcn[:,3])
         ser_avcn = ser_avcn[ind_finitedrift]
+        ser_rvo = ser_rvo[ind_finitedrift]
+        ser_rvo_err = ser_rvo_err[ind_finitedrift]
         
         #match the observation by the JDs -> start with wobble date and find the one with the lowest timediff from serval
         indices_serval = [] 
@@ -235,9 +244,7 @@ class Results_ws():
         self.w_epochs = w_epochs[indices_wobble]
         self.w_RVs_barycorr = w_RVs_barycorr[indices_wobble]                         
         self.w_RVs = w_RVs[indices_wobble]                                           
-        self.w_RVs_er = w_RVs_er[indices_wobble]
-        self.w_RVs_own = w_RVs_own[indices_wobble]                                   
-        self.w_RVs_unweighted = w_RVs_unweighted[indices_wobble]                     
+        self.w_RVs_er = w_RVs_er[indices_wobble]                 
         self.w_bervs = w_bervs[indices_wobble]
         self.w_order_RVs = w_order_RVs[:,indices_wobble]                  
         self.w_order_RV_scatter = w_order_RV_scatter[indices_wobble]
@@ -250,6 +257,7 @@ class Results_ws():
         
         
     def apply_corrections(self, correct_w_for_drift = False, correct_drift = True, correct_NZP = True, correct_SA = True):
+        ser_avcn = self.ser_avcn
         #8 sa drift, 3 drift, 9 NZP
         ser_corr = - ser_avcn[:,8] - ser_avcn[:,3] - ser_avcn[:,9] # use with avcn
         ser_corr_wob = ser_corr
@@ -279,18 +287,51 @@ class Results_ws():
         self.w_RVs_barycorr += ser_corr_wob
         self.w_RVs += ser_corr_wob
         self.w_order_RVs += ser_corr_wob
+        
+    def make_vels(self, vels_dir , output_file_basename = None):
+    #outputs vels file from results_ws object
+        if output_file_basename is None:
+            file_basename = os.path.splitext(os.path.basename(self.wobble_file))[0]
+        else:
+            file_basename = output_file_basename
+        #output wobble results
+        array = np.array([self.w_dates, self.w_RVs_barycorr, self.w_RVs_er])
+        array = np.ndarray.transpose(array)
+        np.savetxt(vels_dir + file_basename + '.vels', array, fmt ='%.18f')
+        #output serval results
+        array = np.array([self.ser_avcn[:,0], self.ser_avcn[:,1], self.ser_avcn[:,2]])
+        array = np.ndarray.transpose(array)
+        np.savetxt(vels_dir + self.bary_starname + "_serval_avcn" + '.vels', array, fmt ='%.18f')
+        
 
 if __name__ == "__main__":
     #test
-    carmenes_object_ID = "J11417+427"
-    bary_starname = "GJ1148"
-    wobble_file = "/data/cmatthe/compare_wobble_serval/wobbledir/results_GJ1148_Kstar0_Kt3_recheck_all_orders.hdf5"
-    serval_dir = "/data/cmatthe/compare_wobble_serval/servaldir/CARM_VIS/"
+    #carmenes_object_ID = "J11417+427"
+    #bary_starname = "GJ1148"
+    #wobble_file = "/data/cmatthe/compare_wobble_serval/wobbledir/results_GJ1148_Kstar0_Kt3_recheck_all_orders.hdf5"
+    #serval_dir = "/data/cmatthe/compare_wobble_serval/servaldir/CARM_VIS/"
+    #res = Results_ws(wobble_file
+                 #, serval_dir
+                 #, carmenes_object_ID
+                 #, bary_starname
+                 #, load_bary = True
+                 #, archive = True)
+    #print(res.w_RVs_barycorr)
+    
+    #vels test on laptop
+    carmenes_object_ID = "J11421+267"
+    bary_starname = "GJ436"
+    wobble_file = serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/results_GJ436_Kstar0_Kt3_git_run_wobble_test0.hdf5"
+    serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" +"../data/servaldir/CARM_VIS/"
+    vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/"
+    os.makedirs(vels_dir, exist_ok = True)
+    
     res = Results_ws(wobble_file
                  , serval_dir
                  , carmenes_object_ID
                  , bary_starname
                  , load_bary = True
                  , archive = True)
-    print(res.w_RVs_barycorr)
+    res.apply_corrections()
+    res.make_vels(vels_dir)
     
