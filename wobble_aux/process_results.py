@@ -143,7 +143,7 @@ class Results_ws():
         wobble_res = h5py.File(wobble_file, 'r')
         w_dates = wobble_res['dates'][()] 
         w_dates_utc = wobble_res['dates_utc'][()]
-        w_orders = wobble_res['orders'][()]
+        self.w_orders = w_orders = wobble_res['orders'][()]
         w_epochs = wobble_res['epochs'][()]
         w_RVs = wobble_res['star_time_rvs'][()]
         w_RVs_er = wobble_res['star_time_sigmas'][()]
@@ -246,7 +246,8 @@ class Results_ws():
         self.w_RVs = w_RVs[indices_wobble]                                           
         self.w_RVs_er = w_RVs_er[indices_wobble]                 
         self.w_bervs = w_bervs[indices_wobble]
-        self.w_order_RVs = w_order_RVs[:,indices_wobble]                  
+        self.w_order_RVs = w_order_RVs[:,indices_wobble]
+        self.w_order_RVs_barycorr = w_order_RVs_barycorr[:,indices_wobble]
         self.w_order_RV_scatter = w_order_RV_scatter[indices_wobble]
         
         '''
@@ -258,23 +259,18 @@ class Results_ws():
         
     def apply_corrections(self, correct_w_for_drift = False, correct_drift = True, correct_NZP = True, correct_SA = True):
         ser_avcn = self.ser_avcn
-        #8 sa drift, 3 drift, 9 NZP
-        ser_corr = - ser_avcn[:,8] - ser_avcn[:,3] - ser_avcn[:,9] # use with avcn
-        ser_corr_wob = ser_corr
-        #optionally remove drift correction if this has been performed during data file generation
-        if correct_w_for_drift:
-            ser_corr_wob = ser_corr + ser_rvc[:,3]
             
         ser_corr = np.zeros(len(self.ser_avcn))
         if correct_drift: #3 drift
-            ser_corr += - ser_avcn[:,3]
+            ser_corr -=  ser_avcn[:,3]
         if correct_SA:    #8 SA 
-            ser_corr += - ser_avcn[:,8]
+            ser_corr -=  ser_avcn[:,8]
         if correct_NZP:   #9 NZP
-            ser_corr += - ser_avcn[:,9]
+            ser_corr -=  ser_avcn[:,9]
         ser_corr_wob = ser_corr
         if not correct_w_for_drift: # in case wobble was already drift corrected in make_data
-            ser_corr_wob += ser_avcn[:,3]
+            #ser_corr_wob += ser_avcn[:,3] #FOR SOME reason this assignment also affects ser_corr
+            ser_corr_wob = ser_corr_wob + ser_avcn[:,3]
         #apply to object
         self.ser_corr = ser_corr
         self.ser_corr_wob = ser_corr_wob
