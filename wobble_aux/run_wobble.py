@@ -286,11 +286,15 @@ def run_wobble(parameters):
     
     start_time = p.start_time = time()
     #generate epoch list
-    print("Loading data. May take a few minutes")
-    data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr,
-                       parameters = p
-                       )
-    epochs_list = p.epochs_list = data.epochs.tolist()
+    # if parameters has been passed a global epochs list use this going forward. This is primarily used by regularization.py
+    try:
+        epochs_list = p.epochs_list = p.global_epochs_list
+    except AttributeError:
+        print("Loading data. May take a few minutes")
+        data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr,
+                            parameters = p
+                            )
+        epochs_list = p.epochs_list = data.epochs.tolist()
     #orders_list = p.orders_list = data.orders.tolist() #too agressive in visible
     orders_list = p.orders_list = np.arange(p.start, p.end).tolist()
     

@@ -36,12 +36,12 @@ _elevation = 2168.
 
 # from carmenes data itself
 #orbital_parameters = [37.02, 41.382, 0.392, 253.6, 2450000 + 1581.046, 303.9] #303.9
-#objects = [["GJ1148", "J11417+427", "vis", 41.382]]
+objects = [["GJ1148", "J11417+427", "vis", 41.382]]
 ##objects = [["GJ1148", "J11417+427", "nir_split", 41.382]]
 ###alternate 2 planet dyn fit (as keplarian)
-#orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299.0],
-                           #[11.34, 532.58, 0.342, 210.4, 2450000 + 1581.046, 272.6]
-                            #]
+orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299.0],
+                           [11.34, 532.58, 0.342, 210.4, 2450000 + 1581.046, 272.6]
+                            ]
 
 #objects = [["GJ876", "J22532-142", "vis", 61.082]]
 ##orbital_parameters = [212.07, 61.082, 0.027, 35.1, 2450000 + 602.093, 341.1]
@@ -51,10 +51,10 @@ _elevation = 2168.
                             #[3.39, 124.4, 0.040, 263.6, 2450000 + 602.093, 310.3]
                              #]
 
-objects = [["GJ436", "J11421+267", "vis", 2.644]]
+#objects = [["GJ436", "J11421+267", "vis", 2.644]]
 #objects = [["GJ436", "J11421+267", "nir_split", 2.644]]
 ##orbital_parameters = [17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3] #(Try with M0 offset of 78.3 deg (see Carm paper)) #currently usig these
-orbital_parameters_mult = [[17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3]]
+#orbital_parameters_mult = [[17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3]]
 #orbital_parameters = [17.38, 2.643859, 0.152, 325.8, 2450000 + 1551.72] 
 #orbital_parameters = [K, P, e, omega, T0, MO]
 
@@ -113,7 +113,8 @@ else:
 
 
 #recalculate_baryQ = False #TODO reimplement pickle saving of barycorrected RVs
-kt = "Kt3_git_run_wobble_test0"
+kt = "Kt3_flat_l4"
+#kt = "Kt3_git_run_wobble_test0"
 #kt = "Kt3_recheck_all_orders"
 #kt = "Kt3_continuum_recheck"
 #kt = "Kt3_l4_reg_snr_10"
@@ -153,7 +154,7 @@ i = objects[0]
 
 carmenes_object_ID = objects[0][1]
 bary_starname = objects[0][0]
-wobble_file = serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/results_" + i[0] + "_Kstar0_" + kt + ".hdf5"
+wobble_file = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/results_" + i[0] + "_Kstar0_" + kt + ".hdf5"
 serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" +"../data/servaldir/CARM_VIS/"
 ### import Data ###
 res = pr.Results_ws(wobble_file
@@ -163,6 +164,9 @@ res = pr.Results_ws(wobble_file
                 , load_bary = load_bary
                 , archive = True)
 res.apply_corrections(correct_w_for_drift = correct_w_for_drift)
+vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/"
+os.makedirs(vels_dir, exist_ok = True)
+res.make_vels(vels_dir)
 
 ser_rvc = res.ser_avcn #HACK this script still uses outdated rvc nomenclature
 ser_corr = res.ser_corr

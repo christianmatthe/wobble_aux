@@ -201,8 +201,8 @@ class Data(object):
         except:
             raise Exception("must pass parameters object to data object via kwargs in .Data for continuum_normalize")
         plot_continuum = p.plot_continuum
-        plot_dir_continuum = p.plot_dir + "/continuum/"
         if plot_continuum:
+            plot_dir_continuum = p.plot_dir + "/continuum/"
             os.makedirs(plot_dir_continuum, exist_ok = True)
         order = p.continuum_order
         nsigma = p.continuum_nsigma
