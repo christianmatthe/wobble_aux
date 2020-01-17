@@ -53,7 +53,7 @@ def dimensions(arm):
 def read_data_from_fits(filelist, arm='vis', starname=None):
     start_time = time()
     start_time = time()
-    names = pd.read_csv('carmenes_aux_files/name_conversion_list.csv')
+    names = pd.read_csv(os.path.dirname(os.path.abspath(__file__)) + '/carmenes_aux_files/name_conversion_list.csv')
     name_dict = dict(zip(names['#Karmn'], names['Name']))
     # input : a list of filenames
     N = len(filelist)  # number of epochs

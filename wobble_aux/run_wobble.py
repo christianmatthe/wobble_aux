@@ -173,7 +173,7 @@ class Parameters:
         (wobble default is 6)
         order of the polynomial used for normalizing the spectra
     continuum_nsigma : [`float`, `float`] (default `[0.5,1]`)
-        data points this many sigma deviations [down, up] from the continuum fit are cut every step
+        data points this many sigma deviations [down, up] from the continuum fit are cut every step during continuum normalization
     plot_continuum : `bool` (default `False`)
         whether or not to output plots of the continua during data import (Note: a LOT of plots (orders*epochs))
         
@@ -246,7 +246,7 @@ def reg_chunk(chunk, reg_file_star, reg_file_t):
     #end_chunk = int(chunk[-1])
     #NOTE assumes reg file starts at order 0 TODO implenent check that file is 61 orders long i.e. that reg file is valid
     #TODO Remove hardcoded temp location?
-    reg_file_star_chunk = 'regularization/temp_star_chunk.hdf5'
+    reg_file_star_chunk = os.path.dirname(os.path.abspath(__file__)) + '/regularization/temp_star_chunk.hdf5'
     with h5py.File(reg_file_star,'r') as f:
         with h5py.File(reg_file_star_chunk,'w') as g:
             for key in list(f.keys()):
@@ -255,7 +255,7 @@ def reg_chunk(chunk, reg_file_star, reg_file_t):
                     if key in list(g.keys()):
                         del g[key]
                     g.create_dataset(key, data = temp)
-    reg_file_t_chunk = 'regularization/temp_t_chunk.hdf5'
+    reg_file_t_chunk = os.path.dirname(os.path.abspath(__file__)) +'/regularization/temp_t_chunk.hdf5'
     with h5py.File(reg_file_t,'r') as f:
         with h5py.File(reg_file_t_chunk,'w') as g:
             for key in list(f.keys()):
@@ -304,10 +304,10 @@ def run_wobble(parameters):
     for i in range(len(chunks)):
         #pass parameters object to chunk script
         p.i = i
-        with open("carmenes_aux_files/chunk_parameters.pkl", "wb") as f:
+        with open(os.path.dirname(os.path.abspath(__file__)) + "/carmenes_aux_files/chunk_parameters.pkl", "wb") as f:
             dill.dump(p, f)
         #start chunk script
-        os.system("python3 chunk.py")
+        os.system("python3  {0}/chunk.py".format(os.path.dirname(os.path.abspath(__file__))))
         
     print("all chunks optimized: writing combined file") 
     results_file_stitch(chunks, results_file, temp_dir)

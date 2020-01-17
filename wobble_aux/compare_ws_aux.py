@@ -982,7 +982,7 @@ if order_plots == True:
     #print(w_orders)
     #last order (41, 55) makes issues here 
     good_orders = []
-    for index, order in enumerate(w_orders[:-2]):
+    for index, order in enumerate(w_orders):
         #print(str(index), str(order))
         order_ind = index
         ind_rvo = order + 5

@@ -12,7 +12,7 @@ import dill
 from run_wobble import *
 
 #import parameters
-with open("carmenes_aux_files/chunk_parameters.pkl", "rb") as f:
+with open(os.path.dirname(os.path.abspath(__file__)) + "/" + "carmenes_aux_files/chunk_parameters.pkl", "rb") as f:
     p = dill.load(f)
 
 #Variables generated in run_wobble efore chunk: 
