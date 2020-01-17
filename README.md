@@ -20,4 +20,4 @@ Includes a version of wobble, do not preinstall wobble.
 
 •additional  required  packages:   barycorrpy ,pandas, dill, numpy =1.17
 
-•wobbletest to check basic functionality
+•run test_example.py to check basic functionality
