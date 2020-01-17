@@ -17,7 +17,7 @@ if True: # GJ1148 :vis
     #GJ1148
     parameters = Parameters(starname = "GJ1148",
                             data_suffix = "_vis_drift_shift",#Default data suffix produced by make_data .indicates that the visual arm data will be used Doppler shifted by SERVAL drifts
-                            start = 50, # first order optimized
+                            start = 11, # first order optimized
                             end = 53, # first order *not* optimized
                             chunk_size = 5, #number of orders that will be optimized in one go (circumvents RAM overflow) will use as many chunks as necessary to optimize all requested orders
                             niter = 160, #number of optimization iterations
