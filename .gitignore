@@ -63,6 +63,8 @@ __pycache__
 #include regularization files
 #!wobble_aux/regularization/*.hdf5
 #include Pseudodefault regularizations
+!wobble_aux/regularization/dummy_star_K0_no_reg.hdf5
+!wobble_aux/regularization/dummy_t_K3_no_reg.hdf5
 !wobble_aux/regularization/GJ436_orderwise_avcn_l4_star.hdf5
 !wobble_aux/regularization/GJ436_orderwise_avcn_l4_t.hdf5
 !wobble_aux/regularization/flat_reg_l3_star.hdf5

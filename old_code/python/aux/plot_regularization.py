@@ -34,7 +34,8 @@ def plot_regularization(reg_file, pdf_name, start_order = 0, plot_title = ""):
     #pp.close()
         
 if __name__ == "__main__":
-    reg_dir = '/data/cmatthe/wobble_data/wobble/regularization/'
+    #reg_dir = '/data/cmatthe/wobble_data/wobble/regularization/'
+    reg_dir = '/data/cmatthe/wobble_aux/wobble_aux/regularization/'
     pdf_dir = '/data/cmatthe/python/wobble_aux/reg_plots/'
     
     #name = 'GJ1148_t_K3_orders[11,53)_stitched'
@@ -43,7 +44,8 @@ if __name__ == "__main__":
     #name = 'def_chunk_5_roll1_star'
     #name= "Wolf294_star_K0_orders[11,54)_regtest1406"
     #name= "GJ876_star_K0_orders[11,53)_stitched_reformatted"
-    name= "GJ1148_star_K0_orders[11,53)_stitched_reformatted"
+    #name= "GJ1148_star_K0_orders[11,53)_stitched_reformatted"
+    name= "dummy_star_K0_no_reg"
     start_order = 0
     
     reg_file = reg_dir + name + '.hdf5'
@@ -80,7 +82,8 @@ if __name__ == "__main__":
     #name = 'def_chunk_5_roll1_t'
     #name= "Wolf294_t_K3_orders[11,54)_regtest1406"
     #name= "GJ876_t_K3_orders[11,53)_stitched_reformatted"
-    name= "GJ1148_t_K3_orders[11,53)_stitched_reformatted"
+    #name= "GJ1148_t_K3_orders[11,53)_stitched_reformatted"
+    name= "dummy_t_K3_no_reg"
     
     reg_file = reg_dir + name + '.hdf5'
     plot_title = name + '_regularization parameters'

@@ -216,10 +216,16 @@ def make_data(starname, arm, data_directory, simbad_name = None):
 if __name__ == "__main__":
     data_directory="../data/"
     
-    if True: # GJ1148 :vis
-        starname = "GJ1148"
-        arm = "vis"
-        make_data(starname, arm, data_directory)
+    if True: # Teegarden : nir
+        starname = "Teegarden"
+        simbad_name = "GAT 1370"
+        arm = "nir"
+        make_data(starname, arm, data_directory, simbad_name)
+    
+    #if True: # GJ1148 :vis
+        #starname = "GJ1148"
+        #arm = "vis"
+        #make_data(starname, arm, data_directory)
     
     #if True: # GJ3473? / G050-16A / G 50-16 inn SIMBAD :vis
         #starname = "GJ3473"

@@ -37,8 +37,10 @@ def plot_regularization(reg_file, pdf_name, start_order = 0, plot_title = ""):
 if __name__ == "__main__":
     loop_iterations = 6
     
-    name= "GJ436_orderwise_snr+drift_shift_1"
-    run_dir = '/data/cmatthe/wobble_reg_search/'+ name +'/'
+    #name= "GJ436_orderwise_snr+drift_shift_1"
+    #run_dir = '/data/cmatthe/wobble_reg_search/'+ name +'/'
+    name= "GJ1148_all_orders"
+    run_dir = '/data/cmatthe/wobble_aux/results/regularization/'+ name +'/'
     pdf_dir = '/data/cmatthe/python/wobble_aux/reg_plots/'
     
     start_order = 0

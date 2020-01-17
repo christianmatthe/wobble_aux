@@ -1,7 +1,7 @@
-import sys
-sys.path.append('/data/cmatthe/python/wobble_aux')#this  path only works on lx39
-import combine_results as cr
-from parameters import Parameters
+#import sys
+#sys.path.append('/data/cmatthe/python/wobble_aux')#this  path only works on lx39
+#import combine_results as cr
+#from parameters import Parameters
 #end local imports
 
 import numpy as np
@@ -18,26 +18,30 @@ end = 61
 R = end - start
 
 
-star_filename = '../wobble/regularization/dummy_star_K0_no_reg.hdf5'
-if not os.path.isfile(star_filename):
-    with h5py.File(star_filename,'w') as f:
+#star_filename = '../wobble/regularization/dummy_star_K0_no_reg.hdf5'
+star_filename = '../../wobble_aux/regularization/dummy_star_K0_no_reg.hdf5'
+#if not os.path.isfile(star_filename):
+with h5py.File(star_filename,'w') as f:
+    f.create_dataset('L1_template', data=np.zeros(R)+1.e0)
+    f.create_dataset('L2_template', data=np.zeros(R)+1.e0)
+    #if K_star > 0:
+        #f.create_dataset('L1_basis_vectors', data=np.zeros(R)+1.e5)
+        #f.create_dataset('L2_basis_vectors', data=np.zeros(R)+1.e6)
+        #f.create_dataset('L2_basis_weights', data=np.ones(R)) # never tuned, just need to pass to wobble                
+
+#tellurics_filename = '../wobble/regularization/dummy_t_K3_no_reg.hdf5'
+tellurics_filename = '../../wobble_aux/regularization/dummy_t_K3_no_reg.hdf5'
+print(os.path.abspath(tellurics_filename))
+#if not os.path.isfile(tellurics_filename):                
+with h5py.File(tellurics_filename,'w') as f:
+    print("test")
+    if True:
         f.create_dataset('L1_template', data=np.zeros(R)+1.e0)
         f.create_dataset('L2_template', data=np.zeros(R)+1.e0)
-        #if K_star > 0:
-            #f.create_dataset('L1_basis_vectors', data=np.zeros(R)+1.e5)
-            #f.create_dataset('L2_basis_vectors', data=np.zeros(R)+1.e6)
-            #f.create_dataset('L2_basis_weights', data=np.ones(R)) # never tuned, just need to pass to wobble                
-
-tellurics_filename = '../wobble/regularization/dummy_t_K3_no_reg.hdf5'
-if not os.path.isfile(tellurics_filename):                
-    with h5py.File(tellurics_filename,'w') as f:
-        if True:
-            f.create_dataset('L1_template', data=np.zeros(R)+1.e0)
-            f.create_dataset('L2_template', data=np.zeros(R)+1.e0)
-        if True:
-            f.create_dataset('L1_basis_vectors', data=np.zeros(R)+1.e0)
-            f.create_dataset('L2_basis_vectors', data=np.zeros(R)+1.e0)
-            f.create_dataset('L2_basis_weights', data=np.ones(R)) # never tuned, just need to pass to wobble
+    if True:
+        f.create_dataset('L1_basis_vectors', data=np.zeros(R)+1.e0)
+        f.create_dataset('L2_basis_vectors', data=np.zeros(R)+1.e0)
+        f.create_dataset('L2_basis_weights', data=np.ones(R)) # never tuned, just need to pass to wobble
             
 #star_filename = '../wobble/regularization/dummy_star_K0_no_reg.hdf5'
 #if not os.path.isfile(star_filename):
@@ -49,16 +53,16 @@ if not os.path.isfile(tellurics_filename):
             ##f.create_dataset('L2_basis_vectors', data=np.zeros(R)+1.e6)
             ##f.create_dataset('L2_basis_weights', data=np.ones(R)) # never tuned, just need to pass to wobble                
 
-tellurics_filename = '../wobble/regularization/dummy_t_K3_10**5.hdf5'
-if not os.path.isfile(tellurics_filename):                
-    with h5py.File(tellurics_filename,'w') as f:
-        if True:
-            f.create_dataset('L1_template', data=np.zeros(R)+1.e5)
-            f.create_dataset('L2_template', data=np.zeros(R)+1.e5)
-        if True:
-            f.create_dataset('L1_basis_vectors', data=np.zeros(R)+1.e5)
-            f.create_dataset('L2_basis_vectors', data=np.zeros(R)+1.e5)
-            f.create_dataset('L2_basis_weights', data=np.ones(R)) # never tuned, just need to pass to wobble
+#tellurics_filename = '../wobble/regularization/dummy_t_K3_10**5.hdf5'
+#if not os.path.isfile(tellurics_filename):                
+    #with h5py.File(tellurics_filename,'w') as f:
+        #if True:
+            #f.create_dataset('L1_template', data=np.zeros(R)+1.e5)
+            #f.create_dataset('L2_template', data=np.zeros(R)+1.e5)
+        #if True:
+            #f.create_dataset('L1_basis_vectors', data=np.zeros(R)+1.e5)
+            #f.create_dataset('L2_basis_vectors', data=np.zeros(R)+1.e5)
+            #f.create_dataset('L2_basis_weights', data=np.ones(R)) # never tuned, just need to pass to wobble
 
 
 ###########

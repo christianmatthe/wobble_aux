@@ -37,7 +37,7 @@ _elevation = 2168.
 # from carmenes data itself
 #orbital_parameters = [37.02, 41.382, 0.392, 253.6, 2450000 + 1581.046, 303.9] #303.9
 objects = [["GJ1148", "J11417+427", "vis", 41.382]]
-##objects = [["GJ1148", "J11417+427", "nir_split", 41.382]]
+#objects = [["GJ1148", "J11417+427", "nir_split", 41.382]]
 ###alternate 2 planet dyn fit (as keplarian)
 orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299.0],
                            [11.34, 532.58, 0.342, 210.4, 2450000 + 1581.046, 272.6]
@@ -64,7 +64,9 @@ orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299
 
 #Teegarden catalogue name:
 #bary_starname = "GAT 1370"
-#orbital_parameters = [2.02, 4.91, 0.00, 77, 2458000 + 52.3]
+#orbital_parameters_mult = [[2.02, 4.91, 0.00, 77, 2458000 + 52.3, 0],
+                           #[11.409, 1.61, 0.00, 286, 2458000 + 53.2, 0]
+                           #]
 #objects = [["Teegarden", "J02530+168", "vis", 4.91]]
 
 #objects = [["GJ285", "J07446+035", "vis", 2.777]]
@@ -113,7 +115,9 @@ else:
 
 
 #recalculate_baryQ = False #TODO reimplement pickle saving of barycorrected RVs
-kt = "Kt3_flat_l4"
+kt = "Kt3_no_reg_all orders"
+#kt = "Kt3_GJ1148_all_orders_reg_loop_5"
+#kt = "Kt3_flat_l4"
 #kt = "Kt3_git_run_wobble_test0"
 #kt = "Kt3_recheck_all_orders"
 #kt = "Kt3_continuum_recheck"
@@ -153,7 +157,10 @@ ax1=plt.gca()
 i = objects[0]
 
 carmenes_object_ID = objects[0][1]
-bary_starname = objects[0][0]
+if 'bary_starname' in locals():
+    print("using alternate bary_starname provided")
+else:
+    bary_starname = objects[0][0]
 wobble_file = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/results_" + i[0] + "_Kstar0_" + kt + ".hdf5"
 serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" +"../data/servaldir/CARM_VIS/"
 ### import Data ###
@@ -979,12 +986,15 @@ if order_plots == True:
         #print(str(index), str(order))
         order_ind = index
         ind_rvo = order + 5
+        if objects[0][2] == "nir_split":
+            ind_rvo = order // 2 + 5 # matches bothsplit orders to the single Serval order they originate from
         sigma_difference = np.nanstd(
         (ser_rvo[:, ind_rvo] - np.nanmean(ser_rvo[:, ind_rvo])) - (w_order_RVs[order_ind ,:] -np.nanmean(w_order_RVs[order_ind ,:]))
         )
-        sigma_difference_clipped = np.nanstd(sigma_clip(
-        (ser_rvo[:, ind_rvo] - np.nanmean(ser_rvo[:, ind_rvo])) - (w_order_RVs[order_ind ,:]-np.nanmean(w_order_RVs[order_ind ,:]))
-        ,sigma = 5) )
+        sigma_difference_clipped = sigma_difference # HACK nanstd breaks after sigma clipping for nir_split data, REASON: There appears to be no Serval data for the first 20 half orders 
+        #sigma_difference_clipped = np.nanstd(sigma_clip(
+        #(ser_rvo[:, ind_rvo] - np.nanmean(ser_rvo[:, ind_rvo])) - (w_order_RVs[order_ind ,:]-np.nanmean(w_order_RVs[order_ind ,:]))
+        #,sigma = 5) )
         serval_order_error = np.nanmedian(ser_rvo_err[:, ind_rvo])
         #Comparison with Serval rvc as "objective" standart
         sigma_difference_rvc = np.nanstd(
@@ -997,9 +1007,10 @@ if order_plots == True:
         sigma_difference_rvc_S = np.nanstd(
         (ser_rvc[:,1] -np.nanmean(ser_rvc[:,1])) - (ser_rvo[:, ind_rvo] - np.nanmean(ser_rvo[:, ind_rvo])) 
         )
-        sigma_difference_clipped_rvc_S = np.nanstd(sigma_clip(
-        (ser_rvc[:,1] -np.nanmean(ser_rvc[:,1])) - (ser_rvo[:, ind_rvo] - np.nanmean(ser_rvo[:, ind_rvo])) 
-        ,sigma = 5) )
+        sigma_difference_clipped_rvc_S = sigma_difference_rvc_S # HACK
+        #sigma_difference_clipped_rvc_S = np.nanstd(sigma_clip(
+        #(ser_rvc[:,1] -np.nanmean(ser_rvc[:,1])) - (ser_rvo[:, ind_rvo] - np.nanmean(ser_rvo[:, ind_rvo])) 
+        #,sigma = 5) )
         
         #Make list of "Good" orders with e.g ks < 10
         if sigma_difference_clipped < 5:

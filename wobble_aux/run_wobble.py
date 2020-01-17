@@ -295,7 +295,7 @@ def run_wobble(parameters):
                             parameters = p
                             )
         epochs_list = p.epochs_list = data.epochs.tolist()
-    #orders_list = p.orders_list = data.orders.tolist() #too agressive in visible
+    #orders_list = p.orders_list = data.orders.tolist() #too agressive in visible # TODO implement alternate nir and vis handling 
     orders_list = p.orders_list = np.arange(p.start, p.end).tolist()
     
     
@@ -332,6 +332,51 @@ def run_wobble(parameters):
 
 
 if __name__ == "__main__":
+    ########### check flat reg loop4 vs loop3
+    #GJ1148
+    parameters = Parameters(starname = "GJ1148",
+                            data_suffix = "_vis_drift_shift",
+                            start = 11,
+                            end = 53,
+                            chunk_size = 5,
+                            niter = 160,
+                            reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            output_suffix = "no_reg_all orders",
+                            plot_continuum = True)
+    run_wobble(parameters)
+    
+    # run Teegarden IR with different regs on lx39
+    #Teegarden
+    #for i in range(6):
+        #parameters = Parameters(starname = "Teegarden",
+                                #data_suffix = "_nir_drift_shift_split",
+                                #start = 0,
+                                #end = 56,
+                                #chunk_size = 5,
+                                #niter = 160,
+                                #reg_file_star =  '/data/cmatthe/wobble_aux/results//regularization/GJ1148_all_orders/loop_{0}/next_base_star_reg.hdf5'.format(i),
+                                #reg_file_t = '/data/cmatthe/wobble_aux/results//regularization/GJ1148_all_orders/loop_{0}/next_base_t_reg.hdf5'.format(i),
+                                #output_suffix = "GJ1148_all_orders_reg_loop_{0}".format(i),
+                                #plot_continuum = False)
+        #run_wobble(parameters)
+    
+    # run GJ1148 IR with different regs on lx39
+    #GJ1148
+    #for i in range(6):
+        #parameters = Parameters(starname = "GJ1148",
+                                #data_suffix = "_nir_drift_shift_split",
+                                #start = 0,
+                                #end = 56,
+                                #chunk_size = 5,
+                                #niter = 160,
+                                #reg_file_star =  '/data/cmatthe/wobble_aux/results//regularization/GJ1148_all_orders/loop_{0}/next_base_star_reg.hdf5'.format(i),
+                                #reg_file_t = '/data/cmatthe/wobble_aux/results//regularization/GJ1148_all_orders/loop_{0}/next_base_t_reg.hdf5'.format(i),
+                                #output_suffix = "GJ1148_all_orders_reg_loop_{0}".format(i),
+                                #plot_continuum = False)
+        #run_wobble(parameters)
+    
+    """
     ########### check flat reg loop4 vs loop3
     #GJ1148
     parameters = Parameters(starname = "GJ1148",
@@ -381,6 +426,7 @@ if __name__ == "__main__":
                             output_suffix = "flat_l3",
                             plot_continuum = True)
     run_wobble(parameters)
+    """
     
     ###########
     #parameters = Parameters(starname = "GJ1148",
