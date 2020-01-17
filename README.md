@@ -1,7 +1,8 @@
 # wobble_aux
-auxiliary code meant to work with megbedell/wobble on CARMENES data. Includes a version of wobble, do not preinstall wobble.
+auxiliary code meant to work with megbedell/wobble on CARMENES data.
 
 Python environment Setup Instructions (preliminary):
+Includes a version of wobble, do not preinstall wobble.
 
 •conda create –name freshenv
 
