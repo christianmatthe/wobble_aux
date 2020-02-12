@@ -50,9 +50,7 @@ def dimensions(arm):
         return
     return M, R
 
-def read_data_from_fits(filelist, arm='vis', starname=None):
-    start_time = time()
-    start_time = time()
+def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None):
     names = pd.read_csv(os.path.dirname(os.path.abspath(__file__)) + '/carmenes_aux_files/name_conversion_list.csv')
     name_dict = dict(zip(names['#Karmn'], names['Name']))
     # input : a list of filenames
@@ -62,9 +60,20 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
     ivars = [np.zeros((N, M)) for r in range(R)]
     xs = [np.zeros((N, M)) for r in range(R)]
     empty = np.array([], dtype=int)
-    pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N) ,np.zeros(N)
+    pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc, total_drifts = np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N) ,np.zeros(N), np.zeros(N)
+    
     for n, f in enumerate(tqdm(filelist)):
         sp = fits.open(f)
+        
+        if not serval_dir:
+            print("no serval directory supplied. Not correcting for NZP")
+            #include NZP by adding them to drifts before correction
+        else:
+            nzp_shift = True
+            carmenes_object_ID = str(sp[0].header['OBJECT']).strip() #ID in header has extra space in front of it
+            ser_avcn = np.loadtxt(serval_dir+ carmenes_object_ID +"/"+ carmenes_object_ID +".avcn.dat")
+            nzp = ser_avcn[:,9]
+        
         try:
             pipeline_rvs[n] = sp[0].header['HIERARCH CARACAL SERVAL RV'] * 1.e3 # m/s
             pipeline_sigmas[n] = sp[0].header['HIERARCH CARACAL SERVAL E_RV'] * 1.e3 # m/s
@@ -83,7 +92,6 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
         jd_mid = jd_start.jd + sp[0].header['HIERARCH CARACAL TMEAN'] * 1/(24*60*60)
         dates_utc[n] = jd_mid
         # for nir ignore all dates before 2016. recommended by Adrian
-        start_time = time()
         date = bary.JDUTC_to_BJDTDB(jd_mid, starname,
                                                            leap_update = False #HACK barycorrpy issue 27
                                                            )[0]
@@ -100,12 +108,10 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
                 print("{} not recognized. valid options are: \"vis\" or"
                 " \"nir\"".format(arm))
                 return
-        start_time = time()
         bervs[n] = bary.get_BC_vel(jd_mid, starname=starname, lat=_lat,
                                    longi=_lon, alt=_elevation,
                                                            leap_update = False #HACK barycorrpy issue 27
                                                            )[0]  # m/s
-        start_time = time()
         airms[n] = sp[0].header['AIRMASS']
         try:
             wave = sp['WAVE'].data
@@ -115,15 +121,33 @@ def read_data_from_fits(filelist, arm='vis', starname=None):
             print('{} Skipping file {}.'.format(e, f))
             empty = np.append(empty, n)
             continue
+        
+    
+        total_drifts[n] = drifts[n]
+        if nzp_shift:
+            #match only the nth date
+            #match the observation by the JDs -> start with wobble date and find the one with the lowest timediff from serval
+            indices_serval = [] 
+            indices_wobble = []
+            #for n in range(len(dates)):
+            ind_jd = np.where(np.abs(ser_avcn[:,0]- dates[n]) == np.nanmin(np.abs(ser_avcn[:,0]- dates[n])))[0][0]
+            if (ser_avcn[ind_jd,0]-dates[n])*24*60<20.: #only takes matches closer than 20 minutes
+                indices_serval.append(ind_jd)
+                indices_wobble.append(n)
+                    
+                # add NZP to drift corrections that match dates in SERVAL:
+                total_drifts[n] = total_drifts[n] + nzp[indices_serval]
+                #print("totals:", total_drifts)
+        
         # save stuff
         for r in range(R):
             data[r][n, :] = spec[r, :]
             ivars[r][n, :] = 1 / sig[r, :]**2
             #xs[r][n, :] = wave[r, :] # replaced with drfit corrected version
+    
             for l in range(len(data[r][n,:])):
-                lambda_drifts = lambda_drift(wave[r, l], drifts[n])
-            xs[r][n, :] = wave[r, :] - lambda_drifts
-        start_time = time()
+                lambda_drifts = lambda_drift(total_drifts[n], wave[r, l])
+                xs[r][n, l] = wave[r, l] - lambda_drifts
 
     # delete data with missing attributes:
     for r in range(R):
@@ -203,10 +227,17 @@ def split_orders_file(filename):
                     del g[key]
                 g.create_dataset(key, data = temp)
                 
-def make_data(starname, arm, data_directory, simbad_name = None):
+def make_data(starname, arm, data_directory, simbad_name = None, serval_dir = None, nzp_shift = True):
+    #if not simbad_name:
+        #simbad_name = starname
+    #print(starname)
     filelist = glob.glob(data_directory + 'CARM_raw_data/{0}/*sci-gtoc-{1}_A.fits'.format(starname, arm))
-    data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname= simbad_name)
-    hdffile = data_directory+'{0}_{1}_drift_shift_e2ds.hdf5'.format(starname, arm)
+    if nzp_shift == True:
+        data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname = simbad_name, serval_dir = serval_dir)
+        hdffile = data_directory+'{0}_{1}_drift+nzp_e2ds.hdf5'.format(starname, arm)
+    else:
+        data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname= simbad_name)
+        hdffile = data_directory+'{0}_{1}_drift_shift_e2ds.hdf5'.format(starname, arm)
     write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc, filelist, hdffile)
     if arm == "nir":
         split_orders_file(hdffile) # save  an aditional split copy
@@ -215,12 +246,27 @@ def make_data(starname, arm, data_directory, simbad_name = None):
 
 if __name__ == "__main__":
     data_directory="../data/"
+    serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" +"../data/servaldir/CARM_VIS/" #read data already includes name dictionary
     
-    if True: # Teegarden : nir
-        starname = "Teegarden"
-        simbad_name = "GAT 1370"
-        arm = "nir"
-        make_data(starname, arm, data_directory, simbad_name)
+    if True: # GJ1148 :vis
+        starname = "GJ1148"
+        #simbad_name = "Ross 1003"
+        arm = "vis"
+        make_data(starname, arm, data_directory, serval_dir = serval_dir)
+        
+######################### deprecated below    
+    
+    #if True: # Barnard vis
+        #starname = "Barnard"
+        #simbad_name = "GJ699"
+        #arm = "vis"
+        #make_data(starname, arm, data_directory, simbad_name)
+    
+    #if True: # Teegarden : nir
+        #starname = "Teegarden"
+        #simbad_name = "GAT 1370"
+        #arm = "nir"
+        #make_data(starname, arm, data_directory, simbad_name)
     
     #if True: # GJ1148 :vis
         #starname = "GJ1148"

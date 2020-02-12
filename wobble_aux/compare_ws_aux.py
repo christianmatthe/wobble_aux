@@ -36,12 +36,12 @@ _elevation = 2168.
 
 # from carmenes data itself
 #orbital_parameters = [37.02, 41.382, 0.392, 253.6, 2450000 + 1581.046, 303.9] #303.9
-objects = [["GJ1148", "J11417+427", "vis", 41.382]]
-#objects = [["GJ1148", "J11417+427", "nir_split", 41.382]]
+#objects = [["GJ1148", "J11417+427", "vis", 41.382]]
+##objects = [["GJ1148", "J11417+427", "nir_split", 41.382]]
 ###alternate 2 planet dyn fit (as keplarian)
-orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299.0],
-                           [11.34, 532.58, 0.342, 210.4, 2450000 + 1581.046, 272.6]
-                            ]
+#orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299.0],
+                           #[11.34, 532.58, 0.342, 210.4, 2450000 + 1581.046, 272.6]
+                            #]
 
 #objects = [["GJ876", "J22532-142", "vis", 61.082]]
 ##orbital_parameters = [212.07, 61.082, 0.027, 35.1, 2450000 + 602.093, 341.1]
@@ -51,10 +51,10 @@ orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299
                             #[3.39, 124.4, 0.040, 263.6, 2450000 + 602.093, 310.3]
                              #]
 
-#objects = [["GJ436", "J11421+267", "vis", 2.644]]
+objects = [["GJ436", "J11421+267", "vis", 2.644]]
 #objects = [["GJ436", "J11421+267", "nir_split", 2.644]]
 ##orbital_parameters = [17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3] #(Try with M0 offset of 78.3 deg (see Carm paper)) #currently usig these
-#orbital_parameters_mult = [[17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3]]
+orbital_parameters_mult = [[17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3]]
 #orbital_parameters = [17.38, 2.643859, 0.152, 325.8, 2450000 + 1551.72] 
 #orbital_parameters = [K, P, e, omega, T0, MO]
 
@@ -88,6 +88,11 @@ orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299
                            #,[3.2050, 1.18695, 0,0,2450000 + 8756.453, 71.7]
                            #]
 
+#Barnards catalogue name:
+#bary_starname = "GJ699"
+#orbital_parameters_mult = [[1.20, 232.80 , 0.32 , 107, 2455000.0, 203]
+                           #]
+#objects = [["Barnard", "J17578+046", "vis", 232.80]]
 
 #####
 load_bary = True #If true will load RVs from pickle saved files if they exist
@@ -98,6 +103,7 @@ order_plots = True
 
 #select False if drift correction was already applied to spectrum
 correct_w_for_drift = False
+correct_SA = False
 
 #####
 #min_sleep = 30
@@ -115,7 +121,9 @@ else:
 
 
 #recalculate_baryQ = False #TODO reimplement pickle saving of barycorrected RVs
-kt = "Kt3_no_reg_all orders"
+kt = "Kt3_GJ1148__no_reg_seed_reg_loop_5"
+#kt = "Kt3_no_reg"
+#kt = "Kt3_no_reg_all orders"
 #kt = "Kt3_GJ1148_all_orders_reg_loop_5"
 #kt = "Kt3_flat_l4"
 #kt = "Kt3_git_run_wobble_test0"
@@ -139,7 +147,7 @@ kt = "Kt3_no_reg_all orders"
 #kt='Kt3_order_39_test'
 #kt='Kt3_opt3'
 #extra_identifier = "_res_offset_HACK"
-extra_identifier = ""
+extra_identifier = "_no_SA"
 output_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/compare_ws/"
 os.makedirs(output_directory, exist_ok = True)
 pp =PdfPages(output_directory + objects[0][0] + kt + extra_identifier+".pdf")
@@ -149,7 +157,7 @@ plt.clf()
 fig.clf()
 ax1=plt.gca()
 
-#read in wobble and serval and compare RVs from Wobble (barycentric corrected) with SERVAL RVs, but also with RVCs and AVCs 
+#read in wobble and serval and compare RVs from Wobble (barycentric corrected) with SERVAL RVs, but also with RVCs and AVCs d
 
 
 ##############################
@@ -170,7 +178,7 @@ res = pr.Results_ws(wobble_file
                 , bary_starname
                 , load_bary = load_bary
                 , archive = True)
-res.apply_corrections(correct_w_for_drift = correct_w_for_drift)
+res.apply_corrections(correct_w_for_drift = correct_w_for_drift, correct_SA = correct_SA)
 vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/"
 os.makedirs(vels_dir, exist_ok = True)
 res.make_vels(vels_dir)
@@ -982,7 +990,7 @@ if order_plots == True:
     #print(w_orders)
     #last order (41, 55) makes issues here 
     good_orders = []
-    for index, order in enumerate(w_orders):
+    for index, order in enumerate(w_orders[:-2]):
         #print(str(index), str(order))
         order_ind = index
         ind_rvo = order + 5

@@ -39,7 +39,8 @@ if __name__ == "__main__":
     
     #name= "GJ436_orderwise_snr+drift_shift_1"
     #run_dir = '/data/cmatthe/wobble_reg_search/'+ name +'/'
-    name= "GJ1148_all_orders"
+    #name= "GJ1148_all_orders"
+    name= "GJ1148_no_reg_seed"
     run_dir = '/data/cmatthe/wobble_aux/results/regularization/'+ name +'/'
     pdf_dir = '/data/cmatthe/python/wobble_aux/reg_plots/'
     

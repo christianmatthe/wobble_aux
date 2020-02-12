@@ -332,19 +332,91 @@ def run_wobble(parameters):
 
 
 if __name__ == "__main__":
+    # run GJ1148 with different regs based on the no_reg seed on lx39 with new NZP corrected data
+    #GJ1148
+    for i in range(0,6):
+        parameters = Parameters(starname = "GJ1148",
+                                data_suffix = "_vis_drift+nzp",
+                                start = 11,
+                                end = 53,
+                                chunk_size = 5,
+                                niter = 160,
+                                reg_file_star =  '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_star_reg.hdf5'.format(i),
+                                reg_file_t = '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_t_reg.hdf5'.format(i),
+                                output_suffix = "GJ1148_no_reg_seed_reg_loop_{0}_with nzp".format(i),
+                                plot_continuum = False)
+        run_wobble(parameters)
+    
+    ## run GJ436 with different regs based on the no_reg seed on lx39
+    ##GJ436
+    #for i in range(0,6):
+        #parameters = Parameters(starname = "GJ436",
+                                #data_suffix = "_vis_drift_shift",
+                                #start = 11,
+                                #end = 53,
+                                #chunk_size = 5,
+                                #niter = 160,
+                                #reg_file_star =  '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_star_reg.hdf5'.format(i),
+                                #reg_file_t = '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_t_reg.hdf5'.format(i),
+                                #output_suffix = "GJ1148__no_reg_seed_reg_loop_{0}".format(i),
+                                #plot_continuum = False)
+        #run_wobble(parameters)
+    
+    ## run GJ1148 with different regs based on the no_reg seed on lx39
+    ##GJ1148
+    #for i in range(3,6):
+        #parameters = Parameters(starname = "GJ1148",
+                                #data_suffix = "_vis_drift_shift",
+                                #start = 11,
+                                #end = 53,
+                                #chunk_size = 5,
+                                #niter = 160,
+                                #reg_file_star =  '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_star_reg.hdf5'.format(i),
+                                #reg_file_t = '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_t_reg.hdf5'.format(i),
+                                #output_suffix = "GJ1148__no_reg_seed_reg_loop_{0}".format(i),
+                                #plot_continuum = False)
+        #run_wobble(parameters)
+    
+    
+    #Barnard with dummy reg
+    #parameters = Parameters(starname = "Barnard",
+                            #data_suffix = "_vis_drift_shift",
+                            #start = 11,
+                            #end = 53,
+                            #chunk_size = 5,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            #output_suffix = "no_reg",
+                            #plot_continuum = False)
+    #run_wobble(parameters)
+    
+    #GJ436 with dummy reg
+    #parameters = Parameters(starname = "GJ436",
+                            #data_suffix = "_vis_drift_shift",
+                            #start = 11,
+                            #end = 53,
+                            #chunk_size = 5,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            #output_suffix = "no_reg",
+                            #plot_continuum = True)
+    #run_wobble(parameters)
+    
     ########### check flat reg loop4 vs loop3
     #GJ1148
-    parameters = Parameters(starname = "GJ1148",
-                            data_suffix = "_vis_drift_shift",
-                            start = 11,
-                            end = 53,
-                            chunk_size = 5,
-                            niter = 160,
-                            reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
-                            reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
-                            output_suffix = "no_reg_all orders",
-                            plot_continuum = True)
-    run_wobble(parameters)
+    #parameters = Parameters(starname = "GJ1148",
+                            #data_suffix = "_vis_drift_shift",
+                            #start = 11,
+                            #end = 53,
+                            #chunk_size = 5,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            #output_suffix = "no_reg_all orders",
+                            #plot_continuum = True)
+    #run_wobble(parameters)
     
     # run Teegarden IR with different regs on lx39
     #Teegarden
