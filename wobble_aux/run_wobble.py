@@ -131,6 +131,24 @@ def append_dates_utc(results_file, data_file):
             w_dates_utc = g['dates_utc'][epoch_indices]        
             f['dates_utc'] = w_dates_utc
             
+def append_parameters(parameters, results_file):
+    #append pickled binary version of parameter object to results file
+    #TODO also attach yaml for manual lookup
+    pkl_string_parameters = dill.dumps(parameters)
+    with h5py.File(results_file,'r+') as f:
+        dset = f.create_dataset("parameters")
+        dset.attrs["pkl"] = np.void(pkl_string_parameters)
+        
+def read_parameters_from_results(results_file):
+    with h5py.File(results_file,'r') as f:
+        out = f["parameters"].attrs["pkl"]
+        pkl_string_parameters = out.tostring()
+        parameters = dill.loads(pkl_string_parameters)
+        return parameters
+        
+        
+        
+            
 #TODO Parameter functions 
 
 class Parameters: 
@@ -319,6 +337,14 @@ def run_wobble(parameters):
     print("time elapsed: {0:.2f} minutes".format((time() - start_time)/60.0))
     results.write(results_file)
     append_dates_utc(results_file, data_file)# cannot be done before results.write, as .write will remove dates_utc
+    append_parameters(p, results_file)
+    #test
+    loaded_parameters = read_parameters_from_results(results_file)
+    print("loaded starname: ", loaded_parameters.starname)
+    if p == loaded_parameters:
+        print("parameters successfully read from file")
+        
+    
     print("results saved as: {0}".format(results_file))
     print("time elapsed: {0:.2f} minutes".format((time() - start_time)/60.0))
     
@@ -332,20 +358,33 @@ def run_wobble(parameters):
 
 
 if __name__ == "__main__":
+    # Test append and read parameters to file
+    parameters = Parameters(starname = "GJ1148",
+                            data_suffix = "_vis_drift+nzp",
+                            start = 30,
+                            end = 31,
+                            chunk_size = 5,
+                            niter = 160,
+                            reg_file_star =  '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_0/next_base_star_reg.hdf5',
+                            reg_file_t = '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_0/next_base_t_reg.hdf5',
+                            output_suffix = "param_pkl_test",
+                            plot_continuum = False)
+    run_wobble(parameters)
+    
     # run GJ1148 with different regs based on the no_reg seed on lx39 with new NZP corrected data
     #GJ1148
-    for i in range(0,6):
-        parameters = Parameters(starname = "GJ1148",
-                                data_suffix = "_vis_drift+nzp",
-                                start = 11,
-                                end = 53,
-                                chunk_size = 5,
-                                niter = 160,
-                                reg_file_star =  '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_star_reg.hdf5'.format(i),
-                                reg_file_t = '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_t_reg.hdf5'.format(i),
-                                output_suffix = "GJ1148_no_reg_seed_reg_loop_{0}_with nzp".format(i),
-                                plot_continuum = False)
-        run_wobble(parameters)
+    #for i in range(0,6):
+        #parameters = Parameters(starname = "GJ1148",
+                                #data_suffix = "_vis_drift+nzp",
+                                #start = 11,
+                                #end = 53,
+                                #chunk_size = 5,
+                                #niter = 160,
+                                #reg_file_star =  '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_star_reg.hdf5'.format(i),
+                                #reg_file_t = '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_t_reg.hdf5'.format(i),
+                                #output_suffix = "GJ1148_no_reg_seed_reg_loop_{0}_with nzp".format(i),
+                                #plot_continuum = False)
+        #run_wobble(parameters)
     
     ## run GJ436 with different regs based on the no_reg seed on lx39
     ##GJ436

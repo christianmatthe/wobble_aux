@@ -138,7 +138,8 @@ class Results_ws():
             #file_dir = os.path.dirname(os.path.abspath(__file__))
             #print(file_dir )
             #bary_archive = file_dir + bary_archive
-        os.makedirs(bary_archive, exist_ok = True)
+        if archive = True:
+            os.makedirs(bary_archive, exist_ok = True)
         # Import wobble
         wobble_res = h5py.File(wobble_file, 'r')
         w_dates = wobble_res['dates'][()] 
