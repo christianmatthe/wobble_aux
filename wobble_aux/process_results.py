@@ -257,7 +257,14 @@ class Results_ws():
         '''
         
         
-    def apply_corrections(self, correct_w_for_drift = False, correct_drift = True, correct_NZP = True, correct_SA = True):
+    def apply_corrections(self, 
+                          correct_w_for_drift = False,
+                          correct_w_for_SA = False,
+                          correct_w_for_NZP = False,
+                          
+                          correct_drift = True, correct_NZP = True, correct_SA = True,
+                          
+                          inverse_NZP = False):
         ser_avcn = self.ser_avcn
             
         ser_corr = np.zeros(len(self.ser_avcn))
@@ -267,10 +274,19 @@ class Results_ws():
             ser_corr -=  ser_avcn[:,8]
         if correct_NZP:   #9 NZP
             ser_corr -=  ser_avcn[:,9]
-        ser_corr_wob = ser_corr
-        if not correct_w_for_drift: # in case wobble was already drift corrected in make_data
-            #ser_corr_wob += ser_avcn[:,3] #FOR SOME reason this assignment also affects ser_corr
-            ser_corr_wob = ser_corr_wob + ser_avcn[:,3]
+        ser_corr_wob = np.zeros(ser_corr.shape)
+        #if (correct_drift and not correct_w_for_drift): # in case wobble was already drift corrected in make_data
+            ##ser_corr_wob += ser_avcn[:,3] #FOR SOME reason this assignment also affects ser_corr
+            #ser_corr_wob = ser_corr_wob + ser_avcn[:,3]
+        if correct_w_for_drift: #3 drift
+            ser_corr_wob -=  ser_avcn[:,3]
+        if correct_w_for_SA:    #8 SA 
+            ser_corr_wob -=  ser_avcn[:,8]
+        if correct_w_for_NZP:   #9 NZP
+            ser_corr_wob -=  ser_avcn[:,9]
+            
+        if inverse_NZP:
+            ser_corr_wob = ser_corr_wob + 0.5 * ser_avcn[:,9]
         #apply to object
         self.ser_corr = ser_corr
         self.ser_corr_wob = ser_corr_wob

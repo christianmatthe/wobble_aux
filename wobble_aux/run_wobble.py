@@ -343,7 +343,7 @@ if __name__ == "__main__":
                                 niter = 160,
                                 reg_file_star =  '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_star_reg.hdf5'.format(i),
                                 reg_file_t = '/data/cmatthe/wobble_aux/results//regularization/GJ1148_no_reg_seed/loop_{0}/next_base_t_reg.hdf5'.format(i),
-                                output_suffix = "GJ1148_no_reg_seed_reg_loop_{0}_with nzp".format(i),
+                                output_suffix = "GJ1148_no_reg_seed_reg_with_nzp_loop_{0}".format(i),
                                 plot_continuum = False)
         run_wobble(parameters)
     

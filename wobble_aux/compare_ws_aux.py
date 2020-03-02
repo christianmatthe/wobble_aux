@@ -53,7 +53,7 @@ _elevation = 2168.
 
 objects = [["GJ436", "J11421+267", "vis", 2.644]]
 #objects = [["GJ436", "J11421+267", "nir_split", 2.644]]
-##orbital_parameters = [17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3] #(Try with M0 offset of 78.3 deg (see Carm paper)) #currently usig these
+#orbital_parameters = [17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3] #(Try with M0 offset of 78.3 deg (see Carm paper)) #currently usig these
 orbital_parameters_mult = [[17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3]]
 #orbital_parameters = [17.38, 2.643859, 0.152, 325.8, 2450000 + 1551.72] 
 #orbital_parameters = [K, P, e, omega, T0, MO]
@@ -103,7 +103,10 @@ order_plots = True
 
 #select False if drift correction was already applied to spectrum
 correct_w_for_drift = False
-correct_SA = False
+correct_w_for_NZP = False #False with new precorrection default
+correct_SA = True # serval only
+correct_NZP = True #serval_only
+
 
 #####
 #min_sleep = 30
@@ -121,6 +124,7 @@ else:
 
 
 #recalculate_baryQ = False #TODO reimplement pickle saving of barycorrected RVs
+#kt = "Kt3_GJ1148_no_reg_seed_reg_with_nzp_loop_5"
 kt = "Kt3_GJ1148__no_reg_seed_reg_loop_5"
 #kt = "Kt3_no_reg"
 #kt = "Kt3_no_reg_all orders"
@@ -147,7 +151,7 @@ kt = "Kt3_GJ1148__no_reg_seed_reg_loop_5"
 #kt='Kt3_order_39_test'
 #kt='Kt3_opt3'
 #extra_identifier = "_res_offset_HACK"
-extra_identifier = "_no_SA"
+extra_identifier = "half_inverse_nzp_corr"
 output_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/compare_ws/"
 os.makedirs(output_directory, exist_ok = True)
 pp =PdfPages(output_directory + objects[0][0] + kt + extra_identifier+".pdf")
@@ -178,7 +182,7 @@ res = pr.Results_ws(wobble_file
                 , bary_starname
                 , load_bary = load_bary
                 , archive = True)
-res.apply_corrections(correct_w_for_drift = correct_w_for_drift, correct_SA = correct_SA)
+res.apply_corrections(correct_NZP = correct_NZP, correct_w_for_drift = correct_w_for_drift, correct_w_for_NZP = correct_w_for_NZP, correct_SA = correct_SA)
 vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/"
 os.makedirs(vels_dir, exist_ok = True)
 res.make_vels(vels_dir)
