@@ -136,7 +136,7 @@ def append_parameters(parameters, results_file):
     #TODO also attach yaml for manual lookup
     pkl_string_parameters = dill.dumps(parameters)
     with h5py.File(results_file,'r+') as f:
-        dset = f.create_dataset("parameters")
+        dset = f.create_dataset("parameters",(100,))
         dset.attrs["pkl"] = np.void(pkl_string_parameters)
         
 def read_parameters_from_results(results_file):
@@ -338,13 +338,19 @@ def run_wobble(parameters):
     results.write(results_file)
     append_dates_utc(results_file, data_file)# cannot be done before results.write, as .write will remove dates_utc
     append_parameters(p, results_file)
-    #test
+    '''
+    # test
     loaded_parameters = read_parameters_from_results(results_file)
-    print("loaded starname: ", loaded_parameters.starname)
-    if p == loaded_parameters:
-        print("parameters successfully read from file")
-        
-    
+    attrs = dir(loaded_parameters)
+    print(attrs)
+    for attr in attrs:
+        #print(attr, getattr(loaded_parameters, attr))
+        q = getattr(p, attr) == getattr(loaded_parameters, attr)
+        if q == True:
+            print(q)
+        else:
+            print(attr, q)
+    '''
     print("results saved as: {0}".format(results_file))
     print("time elapsed: {0:.2f} minutes".format((time() - start_time)/60.0))
     
