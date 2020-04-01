@@ -41,7 +41,7 @@ def chunk_list(start, end, chunk_size, order_list = None):
                         #start_order = i
                         #end_order = end
                     #chunks = np.append(chunks, [[start_order, end_order]], axis=0) 
-    return chunks
+    #return chunks
 
 #def results_file_stitch(start, end, chunk_size, results_file, chunk_dir):
     #"""turns chunks into one continuous file, as if wobble had been run in one piece"""
