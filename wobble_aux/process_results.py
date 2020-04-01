@@ -334,7 +334,7 @@ if __name__ == "__main__":
     #vels test on laptop
     carmenes_object_ID = "J11421+267"
     bary_starname = "GJ436"
-    wobble_file = serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/results_GJ436_Kstar0_Kt3_git_run_wobble_test0.hdf5"
+    wobble_file = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/results_GJ436_Kstar0_Kt3_git_run_wobble_test0.hdf5"
     serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" +"../data/servaldir/CARM_VIS/"
     vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/"
     os.makedirs(vels_dir, exist_ok = True)

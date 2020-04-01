@@ -23,6 +23,10 @@ from tqdm import tqdm
 #iers_conf.iers_auto_url = 'https://astroconda.org/aux/astropy_mirror/iers_a_1/finals2000A.all'
 #iers_conf.iers_auto_url_mirror = 'https://astroconda.org/aux/astropy_mirror/iers_a_2/finals2000A.all'
 
+#works as of 05.March.2020
+from astropy.utils import iers
+iers.Conf.iers_auto_url.set('ftp://cddis.gsfc.nasa.gov/pub/products/iers/finals2000A.all')
+
 from scipy.constants import codata 
 lightvel = codata.value('speed of light in vacuum') #for barycorr
 
@@ -62,6 +66,11 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None)
     empty = np.array([], dtype=int)
     pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc, total_drifts = np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N) ,np.zeros(N), np.zeros(N)
     
+    #file headers sometimes list object not by Carmenes ID but instead with catalogue names (e.g. GJ436 obs 81 lists Ross905 istead of J11421+267. FIX:
+    sp = fits.open(filelist[0])
+    carmenes_object_ID_master = str(sp[0].header['OBJECT']).strip() #ID in header has extra space in front of it
+    print("Object_ID: ", carmenes_object_ID_master) 
+    
     for n, f in enumerate(tqdm(filelist)):
         sp = fits.open(f)
         
@@ -71,6 +80,13 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None)
         else:
             nzp_shift = True
             carmenes_object_ID = str(sp[0].header['OBJECT']).strip() #ID in header has extra space in front of it
+            if carmenes_object_ID != carmenes_object_ID_master:
+                print()
+                print("mismatched object ID: " ,carmenes_object_ID)
+                print("n, f:", n, f)
+                print()
+                #use master instead:
+                carmenes_object_ID = carmenes_object_ID_master
             ser_avcn = np.loadtxt(serval_dir+ carmenes_object_ID +"/"+ carmenes_object_ID +".avcn.dat")
             nzp = ser_avcn[:,9]
         
@@ -248,11 +264,25 @@ if __name__ == "__main__":
     data_directory="../data/"
     serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" +"../data/servaldir/CARM_VIS/" #read data already includes name dictionary
     
-    if True: # GJ1148 :vis
-        starname = "GJ1148"
-        #simbad_name = "Ross 1003"
+    
+    #if True: # GJ1148 :vis
+        #starname = "GJ1148"
+        ##simbad_name = "Ross 1003"
+        #arm = "vis"
+        #make_data(starname, arm, data_directory, serval_dir = serval_dir)
+        
+######################### Laptop examples
+if True: # GJ436 :vis
+        starname = "GJ436"
+        #simbad_name = "GJ436"
         arm = "vis"
-        make_data(starname, arm, data_directory, serval_dir = serval_dir)
+        make_data(starname, arm, data_directory, serval_dir = serval_dir, nzp_shift = True)
+        
+if True: # GJ3473 :vis
+        starname = "GJ3473"
+        simbad_name = "G 50-16"
+        arm = "vis"
+        make_data(starname, arm, data_directory, simbad_name = simbad_name, serval_dir = serval_dir, nzp_shift = True)
         
 ######################### deprecated below    
     
