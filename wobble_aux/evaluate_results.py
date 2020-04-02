@@ -24,7 +24,7 @@ if __name__ == "__main__":
     
     ########### 
     
-     results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/"
+    results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/"
     serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" +"../data/servaldir/CARM_VIS/" #NOTE only for VIS
     
     
