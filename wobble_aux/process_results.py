@@ -138,7 +138,7 @@ class Results_ws():
             #file_dir = os.path.dirname(os.path.abspath(__file__))
             #print(file_dir )
             #bary_archive = file_dir + bary_archive
-        if archive = True:
+        if archive == True:
             os.makedirs(bary_archive, exist_ok = True)
         # Import wobble
         wobble_res = h5py.File(wobble_file, 'r')
@@ -316,6 +316,19 @@ class Results_ws():
         array = np.ndarray.transpose(array)
         np.savetxt(vels_dir + self.bary_starname + "_serval_avcn" + '.vels', array, fmt ='%.18f')
         
+    def eval_vels(self, vels_dir , output_file_basename = None):
+    #outputs vels file from results_ws object
+        if output_file_basename is None:
+            file_basename = os.path.splitext(os.path.basename(self.wobble_file))[0]
+        else:
+            file_basename = output_file_basename
+        #output wobble results
+        array = np.array([self.w_dates, self.w_RVs_barycorr, self.w_RVs_er])
+        array = np.ndarray.transpose(array)
+        vels_filename = vels_dir + file_basename + '.vels'
+        np.savetxt(vels_filename, array, fmt ='%.18f')
+        return vels_filename
+
 
 if __name__ == "__main__":
     #test
