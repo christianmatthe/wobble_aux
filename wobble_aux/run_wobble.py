@@ -41,7 +41,7 @@ def chunk_list(start, end, chunk_size, order_list = None):
                         #start_order = i
                         #end_order = end
                     #chunks = np.append(chunks, [[start_order, end_order]], axis=0) 
-    #return chunks
+    return chunks
 
 #def results_file_stitch(start, end, chunk_size, results_file, chunk_dir):
     #"""turns chunks into one continuous file, as if wobble had been run in one piece"""
@@ -315,7 +315,6 @@ def run_wobble(parameters):
         epochs_list = p.epochs_list = data.epochs.tolist()
     #orders_list = p.orders_list = data.orders.tolist() #too agressive in visible # TODO implement alternate nir and vis handling 
     orders_list = p.orders_list = np.arange(p.start, p.end).tolist()
-    
     
     chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size, p.orders_list)
     #Loop over chunks
