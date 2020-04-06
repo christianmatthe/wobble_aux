@@ -310,10 +310,12 @@ class Results_ws():
         #output wobble results
         array = np.array([self.w_dates, self.w_RVs_barycorr, self.w_RVs_er])
         array = np.ndarray.transpose(array)
+        array = array[array[:,0].argsort()] #Sort by 0th (date) column #HACK should sort be during data creation?
         np.savetxt(vels_dir + file_basename + '.vels', array, fmt ='%.18f')
         #output serval results
         array = np.array([self.ser_avcn[:,0], self.ser_avcn[:,1], self.ser_avcn[:,2]])
         array = np.ndarray.transpose(array)
+        array = array[array[:,0].argsort()] #Sort by 0th (date) column #HACK should sort be during data creation?
         np.savetxt(vels_dir + self.bary_starname + "_serval_avcn" + '.vels', array, fmt ='%.18f')
         
     def eval_vels(self, vels_dir , output_file_basename = None):
@@ -325,6 +327,7 @@ class Results_ws():
         #output wobble results
         array = np.array([self.w_dates, self.w_RVs_barycorr, self.w_RVs_er])
         array = np.ndarray.transpose(array)
+        array = array[array[:,0].argsort()] #Sort by 0th (date) column #HACK should sort be during data creation?
         vels_filename = vels_dir + file_basename + '.vels'
         np.savetxt(vels_filename, array, fmt ='%.18f')
         return vels_filename

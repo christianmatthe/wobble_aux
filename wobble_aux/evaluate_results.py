@@ -131,7 +131,7 @@ def plot_time_series(kep_fit, output_file):
     rvs       = kep_fit.fit_results.rv_model.rvs
     rv_err    = kep_fit.fit_results.rv_model.rv_err
     o_c       = kep_fit.fit_results.rv_model.o_c
-
+    
     data_set  = kep_fit.filelist.idset
 
     # we can add the jitter
@@ -142,10 +142,9 @@ def plot_time_series(kep_fit, output_file):
 
 
     # Kep model time series #
-    #kep_model_x = kep_fit.fit_results.model_jd
-    #kep_model_x = kep_fit.fit_results.model_jd
+    kep_model_x = kep_fit.fit_results.model_jd
     #HACK unknow issue with  the above makes it not equal to the below?
-    kep_model_x = np.linspace(min(jd), max(jd), 1000) #obj.fit_results.model_jd
+    #kep_model_x = np.linspace(min(jd), max(jd), 1000) #obj.fit_results.model_jd # 1000 is same dimensions but produces incorrect plots
     kep_model_y = kep_fit.fit_results.model
 
     
@@ -203,8 +202,11 @@ def plot_time_series(kep_fit, output_file):
 if __name__ == "__main__": 
     
     
-    run_name = "test_1"
-    file_list = ["results_GJ436_Kstar0_Kt3_laptop_example_0.hdf5", "results_GJ3473_Kstar0_Kt3_laptop_example_1.hdf5" ] #laptop sample file
+    #run_name = "test_1"
+    #file_list = ["results_GJ436_Kstar0_Kt3_laptop_example_0.hdf5", "results_GJ3473_Kstar0_Kt3_laptop_example_1.hdf5" ] #laptop sample file
+    
+    run_name = "test_2"
+    file_list = ["results_GJ1148_Kstar0_Kt3_eval_example_2.hdf5","results_GJ436_Kstar0_Kt3_laptop_example_0.hdf5", "results_GJ3473_Kstar0_Kt3_laptop_example_1.hdf5"]
     
     ########### 
     
@@ -224,12 +226,14 @@ if __name__ == "__main__":
     # dictionary connecting results_file["parameters"].attrs["pkl"] -> parameters.starname to CARMENES ID for serval results matching
     name_dict = {
         "GJ436"  : "J11421+267",
+        "GJ1148" : "J11417+427",
         "GJ3473" : "J08023+033"
         
         }
     
     simbad_dict = {
         "GJ436"  : "GJ436",
+        "GJ1148" : "GJ1148",
         "GJ3473" : "G 50-16"
         
         }
