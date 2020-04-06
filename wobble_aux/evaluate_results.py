@@ -58,6 +58,7 @@ def vels_to_kep_fit(dataset_name, vels_file):
     
     # Run GLS once 
     rv.run_gls(fit)
+    #TEST rv.run_gls("jo",123)
     rv.run_gls_o_c(fit)
         
     # now lets find the planets in our data!
@@ -108,7 +109,7 @@ def plot_time_series(kep_fit, output_file):
     ##### time series format ######
     f = plt.figure(0, figsize=(8,6.5))
     plt.subplots_adjust(hspace=0.005)
-    format_im = 'png' #'pdf'
+    format_im = 'pdf' #'pdf' or png
     dpi = 300
 
     gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1]) 
@@ -119,7 +120,7 @@ def plot_time_series(kep_fit, output_file):
 
     
     color = ['b', 'r', 'g', 'r']
-    symbol = ['o', 'D', 'o', 'o']   
+    symbol = ['o', 'D', 'o', 'o']
     markersize = [5, 5, 6, 6] 
     alpha = [1, 1, 1, 1]
 
@@ -141,7 +142,10 @@ def plot_time_series(kep_fit, output_file):
 
 
     # Kep model time series #
-    kep_model_x = kep_fit.fit_results.model_jd
+    #kep_model_x = kep_fit.fit_results.model_jd
+    #kep_model_x = kep_fit.fit_results.model_jd
+    #HACK unknow issue with  the above makes it not equal to the below?
+    kep_model_x = np.linspace(min(jd), max(jd), 1000) #obj.fit_results.model_jd
     kep_model_y = kep_fit.fit_results.model
 
     
@@ -199,14 +203,14 @@ def plot_time_series(kep_fit, output_file):
 if __name__ == "__main__": 
     
     
-    run_name = "test_0"
+    run_name = "test_1"
     file_list = ["results_GJ436_Kstar0_Kt3_laptop_example_0.hdf5", "results_GJ3473_Kstar0_Kt3_laptop_example_1.hdf5" ] #laptop sample file
     
     ########### 
     
     results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/"
     serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/" #NOTE only for VIS
-    output_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/evaluate/{}/".format(run_name)
+    output_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/evaluate/{0}/".format(run_name)
     os.makedirs(output_dir, exist_ok = True)
     
     
@@ -267,10 +271,10 @@ if __name__ == "__main__":
         kep_fit = vels_to_kep_fit(dataset_name, vels_file)
         
         #3.
-        output_file = os.path.splitext(wobble_file)[0]
+        output_file = output_dir + os.path.splitext(os.path.split(wobble_file)[1])[0] #TODO make into function?
         plot_time_series(kep_fit, output_file)
         
-        #TODO Fix incorrect plot start for fit in time series 
+        #TODO Fix incorrect plot start for fit in time series, fixed with HACK for kep_model_x
         
         
     

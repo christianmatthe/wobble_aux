@@ -364,6 +364,19 @@ def run_wobble(parameters):
 
 
 if __name__ == "__main__":
+    parameters = Parameters(starname = "GJ1148",
+                            data_suffix = "_vis_drift+nzp",
+                            start = 11,
+                            end = 53,
+                            chunk_size = 5,
+                            niter = 160,
+                            reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            output_suffix = "eval_example_2",
+                            plot_continuum = False)
+    run_wobble(parameters)
+    
+    ''' both are visually dificult to judge in time series
     #laptop test example
     parameters = Parameters(starname = "GJ436",
                             data_suffix = "_vis_drift+nzp",
@@ -388,6 +401,7 @@ if __name__ == "__main__":
                             output_suffix = "laptop_example_1",
                             plot_continuum = False)
     run_wobble(parameters)
+    '''
     
     '''
     # Test append and read parameters to file
