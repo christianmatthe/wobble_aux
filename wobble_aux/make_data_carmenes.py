@@ -272,13 +272,13 @@ if __name__ == "__main__":
         #make_data(starname, arm, data_directory, serval_dir = serval_dir)
         
 ######################### Laptop examples
-if True: # GJ436 :vis
+    if True: # GJ436 :vis
         starname = "GJ436"
         #simbad_name = "GJ436"
         arm = "vis"
         make_data(starname, arm, data_directory, serval_dir = serval_dir, nzp_shift = True)
         
-if True: # GJ3473 :vis
+    if True: # GJ3473 :vis
         starname = "GJ3473"
         simbad_name = "G 50-16"
         arm = "vis"

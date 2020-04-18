@@ -7,6 +7,7 @@ import os
 import matplotlib.pyplot as plt
 import dill
 
+
 #Reproduce combine results first: functions required for runnign wobble in small chunks of orders so as not to overflow RAM
 def file_chunk_name(start_order, end_order, chunk_dir):
     results_file_chunk_name = chunk_dir + 'orders[{0},{1}]'.format(start_order, end_order) + '.hdf5' #this name must be same as in chunkscript
@@ -194,6 +195,8 @@ class Parameters:
         data points this many sigma deviations [down, up] from the continuum fit are cut every step during continuum normalization
     plot_continuum : `bool` (default `False`)
         whether or not to output plots of the continua during data import (Note: a LOT of plots (orders*epochs))
+    drop_orders : `list of ints` (default [])
+        list used by continuum normalize to mark orders that could  not be continuum normalized
         
     
         
@@ -237,6 +240,7 @@ class Parameters:
         self.continuum_order = continuum_order
         self.continuum_nsigma = continuum_nsigma
         self.plot_continuum  = plot_continuum
+        self.drop_orders = []
         '''
         self.dictionary = {
             "starname" : starname,
@@ -305,16 +309,37 @@ def run_wobble(parameters):
     start_time = p.start_time = time()
     #generate epoch list
     # if parameters has been passed a global epochs list use this going forward. This is primarily used by regularization.py
-    try:
+    try: #skipping the except will make major issues unless dropped epochs and orders are already handled
         epochs_list = p.epochs_list = p.global_epochs_list
+        p.drop_orders = data.drop_orders # this check here only works if data object is not yet initialized with empty drop order list.
     except AttributeError:
         print("Loading data. May take a few minutes")
-        data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr,
-                            parameters = p
-                            )
-        epochs_list = p.epochs_list = data.epochs.tolist()
+        try:
+            data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr,
+                                parameters = p
+                                )
+            epochs_list = p.epochs_list = data.epochs.tolist()
+        except wobble.data.AllDataDropped:
+            p.min_snr = 5
+            print("restarting with min_snr  = {}".format(p.min_snr))
+            
+            data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr,
+                                parameters = p
+                                )
+            epochs_list = p.epochs_list = data.epochs.tolist()
+
+            
+            
     #orders_list = p.orders_list = data.orders.tolist() #too agressive in visible # TODO implement alternate nir and vis handling 
-    orders_list = p.orders_list = np.arange(p.start, p.end).tolist()
+    try:
+        p.drop_orders = data.drop_orders
+        print("data.drop_orders", data.drop_orders)
+    except AttributeError:
+        print("data.drop_orders is not defined")
+        
+    base_orders_list = np.arange(p.start, p.end).tolist()
+    orders_list = p.orders_list = [x for x in base_orders_list if x not in p.drop_orders]
+    print("orders_list", orders_list)
     
     chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size, p.orders_list)
     #Loop over chunks

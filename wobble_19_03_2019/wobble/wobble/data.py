@@ -12,6 +12,10 @@ import scipy.interpolate as interpolate
 #sys.path.append('../../../wobble_aux')
 #from run_wobble import Parameters
 
+class AllDataDropped(Exception):
+    def __init__(self):
+        pass
+
 class Data(object):
     """
     The data object: contains the spectra and associated data.
@@ -55,6 +59,7 @@ class Data(object):
         self.mask_low_pixels(min_flux=min_flux, padding=padding, min_snr=min_snr)
         
         orders = np.asarray(self.orders)
+        orders_start = orders
         #HACK NOTE #NOTE change 25/10/2019 snr+data_suffix , temporarily removed order cutting since it breaks orderswise optimization, and was ignored before anyways
         snrs_by_order = np.sqrt(np.nanmean(self.ivars, axis=(1,2)))
         orders_to_cut = snrs_by_order < min_snr
@@ -65,7 +70,7 @@ class Data(object):
             self.mask_low_pixels(min_flux=min_flux, padding=padding, min_snr=min_snr)
         if len(orders) == 0:
             print("All orders failed the quality cuts with min_snr={0:.0f}.".format(min_snr))
-            return
+            raise AllDataDropped
         
         epochs = np.asarray(self.epochs)
         snrs_by_epoch = np.sqrt(np.nanmean(self.ivars, axis=(0,2)))
@@ -77,10 +82,13 @@ class Data(object):
             self.mask_low_pixels(min_flux=min_flux, padding=padding, min_snr=min_snr)
         if len(epochs) == 0:
             print("All epochs failed the quality cuts with min_snr={0:.0f}.".format(min_snr))
-            return
+            raise AllDataDropped
+            #return
             
         # log and normalize:
         self.ys = np.log(self.fluxes) 
+        self.drop_orders = [] # empty list to be used by continuum normalize
+        print("self.drop_orders define: ", self.drop_orders)
         self.continuum_normalize(**kwargs) 
         
         # HACK - optionally un-log it:
@@ -240,6 +248,7 @@ class Data(object):
             #print(xs_deleted, xs_deleted.shape)
             
         """Continuum-normalize all spectra using a polynomial fit. Takes kwargs of utils.fit_continuum"""
+        #self.drop_orders = []
         for r in range(self.R):
             for n in range(self.N):
                 #try:
@@ -247,15 +256,23 @@ class Data(object):
                 #fit = fit_continuum(xs_deleted[r][n], ys_deleted[r][n], ivars_deleted[r][n], order = order
                                 ##, **kwargs
                                 #)
-                fit = fit_continuum(xs_masked[r][n].compressed(), ys_masked[r][n].compressed(), ivars_masked[r][n].compressed(), order = order, nsigma = nsigma
-                                    #, **kwargs
-                                    ) #pass compressed arrays, to get rid of masked sections
-                #fit = fit_continuum(xs_masked[r][n], ys_masked[r][n], ivars_masked[r][n], order = order
-                                    ##, **kwargs
-                                    #)
-                #fit = fit_continuum(self.xs[r][n], self.ys[r][n], self.ivars[r][n], order = order
-                                    ##, **kwargs
-                                    #)
+                try:
+                    fit = fit_continuum(xs_masked[r][n].compressed(), ys_masked[r][n].compressed(), ivars_masked[r][n].compressed(), order = order, nsigma = nsigma
+                                        #, **kwargs
+                                        ) #pass compressed arrays, to get rid of masked sections
+                    #fit = fit_continuum(xs_masked[r][n], ys_masked[r][n], ivars_masked[r][n], order = order
+                                        ##, **kwargs
+                                        #)
+                    #fit = fit_continuum(self.xs[r][n], self.ys[r][n], self.ivars[r][n], order = order
+                                        ##, **kwargs
+                                        #)
+                except Exception as err:
+                    print("Continuum normalization of order {0} epoch {1} failed. Dropping order {0}".format(self.orders[r], self.epochs[n]))
+                    self.drop_orders.append(self.orders[r]) #append to drop orders list
+                    print("self.drop_orders: ", self.drop_orders)
+                    continue
+                    
+                    
                 
                                     
                 if plot_continuum:

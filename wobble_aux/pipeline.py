@@ -8,15 +8,18 @@ from tqdm import tqdm
 if __name__ == "__main__":
     #setup dictionaries
     name_dict = {
-        "GJ436"     : "J11421+267",
-        "GJ1148"    : "J11417+427",
-        "GJ3473"    : "J08023+033",
-        "YZ Cet"    : "J01125-169",
-        "GJ15A"     : "J00183+440",
-        "GJ176"     : "J04429+189",
-        "GJ536"     : "J14010-026",
-        "GJ581"     : "J15194-077",
-        "GJ3512"    : "J08413+594",
+        
+        #"GJ436"     : "J11421+267",
+        #"GJ1148"    : "J11417+427",
+        #"GJ3473"    : "J08023+033",
+        #"YZ Cet"    : "J01125-169",
+        #"GJ15A"     : "J00183+440",
+        #"GJ176"     : "J04429+189",
+        #"GJ536"     : "J14010-026",
+        
+        #"GJ581"     : "J15194-077",
+        
+        "GJ3512"    : "J08413+594", #issues due to low min_snr, drops all orders at snr 60
         "Wolf294"   : "J06548+332",
         "GJ876"     : "J22532-142",
         "Teegarden" : "J02530+168",
@@ -40,10 +43,10 @@ if __name__ == "__main__":
         "Barnard"   : "GJ699"
         
         }
-    
+    '''
     #make_data_carmenes
     #BEGIN parameters mdc
-    data_directory= os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/"
+    data_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/"
     serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/" #read data already includes name dictionary
     #END parameters mdc
     
@@ -51,7 +54,8 @@ if __name__ == "__main__":
         starname = star
         simbad_name = simbad_dict[star]
         arm = "vis"
-        make_data(starname, arm, data_directory, serval_dir = serval_dir, nzp_shift = True)
+        mdc.make_data(starname, arm, data_directory, simbad_name = simbad_name, serval_dir = serval_dir, nzp_shift = True)
+    '''    
         
     #run wobble
     #BEGIN parameters rw
@@ -63,7 +67,7 @@ if __name__ == "__main__":
     
     
     for star in tqdm(name_dict):
-        parameters = Parameters(starname = star,
+        parameters = rw.Parameters(starname = star,
                                 results_dir = results_dir,
                                 
                             data_suffix = "_vis_drift+nzp",
@@ -75,7 +79,7 @@ if __name__ == "__main__":
                             reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
                             output_suffix = "baseline_0",
                             plot_continuum = False)
-        run_wobble(parameters)
+        rw.run_wobble(parameters)
         #TODO automatically write file list fron  this?
         
 #use eval results after this

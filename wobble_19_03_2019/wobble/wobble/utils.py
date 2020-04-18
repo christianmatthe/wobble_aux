@@ -69,6 +69,17 @@ def fit_continuum(x, y, ivars, order=6,
         ###for diagnosis of numpy.linalg.LinAlgError: Singular matrix
         try:
             w = np.linalg.solve(np.dot(A[m].T, A[m]), np.dot(A[m].T, y[m]))
+                        
+            mu = np.dot(A, w)
+            resid = y - mu
+            sigma = np.sqrt(np.nanmedian(resid**2))
+            #m_new = np.abs(resid) < nsigma*sigma
+            m_new = (resid > -nsigma[0]*sigma) & (resid < nsigma[1]*sigma)
+            if m.sum() == m_new.sum():
+                m = m_new
+                break
+            m = m_new
+            return mu
         except:
             print("Unexpected error:", sys.exc_info()[0])
             print(A, y)
@@ -76,18 +87,9 @@ def fit_continuum(x, y, ivars, order=6,
             print("unsing mask m:")
             print(A[m], y[m])
             print(A[m].shape, y[m].shape)
+            raise Exception ("Error during continnuum normalization: ", sys.exc_info()[0],
+                             "Dropping this order")
         ###
-            
-        mu = np.dot(A, w)
-        resid = y - mu
-        sigma = np.sqrt(np.nanmedian(resid**2))
-        #m_new = np.abs(resid) < nsigma*sigma
-        m_new = (resid > -nsigma[0]*sigma) & (resid < nsigma[1]*sigma)
-        if m.sum() == m_new.sum():
-            m = m_new
-            break
-        m = m_new
-    return mu
 
 def bin_data(xs, ys, ivars, xps):
     """
