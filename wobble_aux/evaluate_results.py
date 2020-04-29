@@ -272,6 +272,7 @@ if __name__ == "__main__":
         
         #2.
         dataset_name = parameters.starname
+        print("dataset_name: ", dataset_name ,"vels_vile: ", vels_file)
         kep_fit = vels_to_kep_fit(dataset_name, vels_file)
         
         #3.
