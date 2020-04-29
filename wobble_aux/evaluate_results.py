@@ -25,6 +25,9 @@ import process_results as pr
 import sys 
 sys.path.append('/home/christian/Documents/exostriker/lib/') #RV_mod directory must be in your path
 sys.path.append('/home/christian/Documents/exostriker/lib/RV_mod/')
+#on LX39
+#sys.path.append('/data/cmatthe/python/exostriker/lib/')
+#sys.path.append('/data/cmatthe/python/exostriker/lib/RV_mod/')
 import RV_mod as rv
 import gls as gls
 import numpy as np
@@ -42,7 +45,8 @@ def vels_to_kep_fit(dataset_name, vels_file):
     #option include e.g. name = starname to identify session
 
     #fit.cwd = '../' # NOTE it is also important that the ES current working directory (cwd) point to the "lib" directory. This will be fixed in future releases 
-    fit.cwd = '/home/christian/Documents/exostriker/' # HACK
+    fit.cwd = '/home/christian/Documents/exostriker/' # HACK on laptop
+    #fit.cwd = '/data/cmatthe/python/exostriker/' # OnLX39
     
     
     #write RVmod auto fit example into a function
@@ -55,7 +59,6 @@ def vels_to_kep_fit(dataset_name, vels_file):
     
     #  Run it once to find the RV offsets, no planets yet.
     fit.fitting(outputfiles=[1,1,1], doGP=False,  minimize_fortran=True, minimize_loglik=False, amoeba_starts=20, print_stat=False)
-    
     # Run GLS once 
     rv.run_gls(fit)
     #TEST rv.run_gls("jo",123)
@@ -205,12 +208,22 @@ if __name__ == "__main__":
     #run_name = "test_1"
     #file_list = ["results_GJ436_Kstar0_Kt3_laptop_example_0.hdf5", "results_GJ3473_Kstar0_Kt3_laptop_example_1.hdf5" ] #laptop sample file
     
-    run_name = "test_2"
-    file_list = ["results_GJ1148_Kstar0_Kt3_eval_example_2.hdf5","results_GJ436_Kstar0_Kt3_laptop_example_0.hdf5", "results_GJ3473_Kstar0_Kt3_laptop_example_1.hdf5"]
+    #run_name = "test_2"
+    #file_list = ["results_GJ1148_Kstar0_Kt3_eval_example_2.hdf5","results_GJ436_Kstar0_Kt3_laptop_example_0.hdf5", "results_GJ3473_Kstar0_Kt3_laptop_example_1.hdf5"]
+    
+    run_name ="baseline_0"
+    file_list = ["results_GJ436_Kstar0_Kt3_baseline_0.hdf5",
+        "results_GJ1148_Kstar0_Kt3_baseline_0.hdf5",
+        "results_GJ3473_Kstar0_Kt3_baseline_0.hdf5",
+        "results_YZ Cet_Kstar0_Kt3_baseline_0.hdf5",
+        "results_GJ15A_Kstar0_Kt3_baseline_0.hdf5",
+        "results_GJ176_Kstar0_Kt3_baseline_0.hdf5", "results_GJ536_Kstar0_Kt3_baseline_0.hdf5", "results_GJ3512_Kstar0_Kt3_baseline_0.hdf5", "results_Wolf294_Kstar0_Kt3_baseline_0.hdf5", "results_GJ876_Kstar0_Kt3_baseline_0.hdf5" , "results_Teegarden_Kstar0_Kt3_baseline_0.hdf5", "results_Barnard_Kstar0_Kt3_baseline_0.hdf5"
+                 ]
     
     ########### 
     
-    results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/"
+    #results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/"#
+    results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/pipeline_test_0/"
     serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/" #NOTE only for VIS
     output_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/evaluate/{0}/".format(run_name)
     os.makedirs(output_dir, exist_ok = True)
@@ -225,18 +238,42 @@ if __name__ == "__main__":
     #HACK Either write Carm ID into results file or make a more permanent name dict
     # dictionary connecting results_file["parameters"].attrs["pkl"] -> parameters.starname to CARMENES ID for serval results matching
     name_dict = {
-        "GJ436"  : "J11421+267",
-        "GJ1148" : "J11417+427",
-        "GJ3473" : "J08023+033"
+        
+        "GJ436"     : "J11421+267",
+        "GJ1148"    : "J11417+427",
+        "GJ3473"    : "J08023+033",
+        "YZ Cet"    : "J01125-169",
+        "GJ15A"     : "J00183+440",
+        "GJ176"     : "J04429+189",
+        "GJ536"     : "J14010-026",
+        
+        #"GJ581"     : "J15194-077", didn't download data
+        
+        "GJ3512"    : "J08413+594", #issues due to low min_snr, drops all orders at snr 60
+        "Wolf294"   : "J06548+332",
+        "GJ876"     : "J22532-142",
+        "Teegarden" : "J02530+168",
+        "Barnard"   : "J17578+046"
         
         }
     
     simbad_dict = {
-        "GJ436"  : "GJ436",
-        "GJ1148" : "GJ1148",
-        "GJ3473" : "G 50-16"
+        "GJ436"     : "GJ436",
+        "GJ1148"    : "GJ1148",
+        "GJ3473"    : "G 50-16",
+        "YZ Cet"    : "YZ Cet",
+        "GJ15A"     : "GJ15A" ,
+        "GJ176"     : "GJ176" ,
+        "GJ536"     : "GJ536",
+        "GJ581"     : "GJ581",
+        "GJ3512"    : "GJ3512",
+        "Wolf294"   : "Wolf294",
+        "GJ876"     : "GJ876" ,
+        "Teegarden" : "GAT 1370",
+        "Barnard"   : "GJ699"
         
         }
+    '''
     
     for f in file_list:
         wobble_file = results_dir + f
@@ -253,12 +290,12 @@ if __name__ == "__main__":
         #1. results file to vels
         #2. vels to kep_fit
         #3. plot
-        
+        ""
         #1. 
         #vels test on laptop
         carmenes_object_ID = name_dict[parameters.starname]
         bary_starname = simbad_dict[parameters.starname]
-        vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/"
+        #vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/" This does nothing right?
         os.makedirs(vels_dir, exist_ok = True)
         
         res = pr.Results_ws(wobble_file
@@ -269,6 +306,7 @@ if __name__ == "__main__":
                     , archive = True)
         res.apply_corrections()
         vels_file = res.eval_vels(output_dir)
+
         
         #2.
         dataset_name = parameters.starname
@@ -280,6 +318,39 @@ if __name__ == "__main__":
         plot_time_series(kep_fit, output_file)
         
         #TODO Fix incorrect plot start for fit in time series, fixed with HACK for kep_model_x
+        '''
+        
+        #HACK quck test onn laptop only
+        
+            #results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/"#
+    
+    #base_dir = "/home/christian/Documents/wobble_aux/wobble_aux"
+    #results_dir = base_dir + "/" + "../results/pipeline/pipeline_test_0/"
+    #serval_dir = base_dir + "/" + "../data/servaldir/CARM_VIS/" #NOTE only for VIS
+    #output_dir = base_dir + "/" + "../results/evaluate/{0}/".format(run_name)
+    #os.makedirs(output_dir, exist_ok = True)
+    
+    
+    results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/pipeline_test_0/"
+    serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/" #NOTE only for VIS
+    output_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/evaluate/{0}/".format(run_name)
+    os.makedirs(output_dir, exist_ok = True)
+    
+    #vels_dir = output_dir
+    #vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/"
+    for f in file_list:
+        wobble_file = results_dir + f
+        vels_file = output_dir + os.path.splitext(os.path.split(wobble_file)[1])[0] + ".vels"
+        
+        #2.
+        dataset_name = os.path.splitext(f)[0]
+        print("dataset_name: ", dataset_name ,"vels_vile: ", vels_file)
+        kep_fit = vels_to_kep_fit(dataset_name, vels_file)
+        
+        #3.
+        output_file = output_dir + os.path.splitext(os.path.split(wobble_file)[1])[0] #TODO make into function?
+        plot_time_series(kep_fit, output_file)
+        
         
         
     
