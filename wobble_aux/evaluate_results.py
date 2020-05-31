@@ -63,6 +63,10 @@ def vels_to_kep_fit(dataset_name, vels_file):
     rv.run_gls(fit)
     #TEST rv.run_gls("jo",123)
     rv.run_gls_o_c(fit)
+    
+    #add period limits
+    rv.run_gls(fit,fend =1.5,fbeg=10000)
+    rv.run_gls_o_c(fit,fend =1.5,fbeg=10000)
         
     # now lets find the planets in our data!
     fit.auto_fit_max_pl = 2
@@ -211,7 +215,7 @@ if __name__ == "__main__":
     #run_name = "test_2"
     #file_list = ["results_GJ1148_Kstar0_Kt3_eval_example_2.hdf5","results_GJ436_Kstar0_Kt3_laptop_example_0.hdf5", "results_GJ3473_Kstar0_Kt3_laptop_example_1.hdf5"]
     
-    run_name ="baseline_0"
+    run_name ="baseline_1"
     file_list = ["results_GJ436_Kstar0_Kt3_baseline_0.hdf5",
         "results_GJ1148_Kstar0_Kt3_baseline_0.hdf5",
         "results_GJ3473_Kstar0_Kt3_baseline_0.hdf5",
