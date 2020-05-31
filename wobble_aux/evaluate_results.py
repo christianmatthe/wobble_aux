@@ -87,7 +87,7 @@ def vels_to_kep_fit(dataset_name, vels_file):
     
     return kep_fit
 
-def plot_time_series(kep_fit, output_file):
+def plot_time_series(kep_fit, output_file, table = True, width = 10, precision = 2):
     ###### For nice plotting ##############
 
     mpl.rcParams['axes.linewidth'] = 2.0 #set the value globally
@@ -107,7 +107,7 @@ def plot_time_series(kep_fit, output_file):
     
     # HACK usetex fails (probably because no latex is installed) mpl.rc('text',usetex=True)
     mpl.rc('text',usetex=False)
-    font = {'family' : 'normal','weight' : 'bold','size'   : 18,'serif':['Helvetica']}
+    font = {'family' : 'normal','weight' : 'bold','size'   : 12,'serif':['Helvetica']}
     mpl.rc('font', **font)
     ##### time series format ######
     f = plt.figure(0, figsize=(8,6.5))
@@ -183,13 +183,75 @@ def plot_time_series(kep_fit, output_file):
     ax2.set_xlim(min(jd)-offset_pre,max(jd)+offset_post)
 
     ax2.locator_params(axis="x", nbins=9)
+    
     plt.setp( ax2.get_yticklabels(), fontsize=15,weight='bold')
     plt.setp( ax2.get_xticklabels(), fontsize=15,weight='bold')
     
+    
     # Fine-tune figure; make subplots close to each other and hide x ticks for
     # all but bottom plot.
+        
     
     plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False) 
+    
+    ##TODO
+    if table == True:
+    #option 1 manual matplollib table
+    #https://matplotlib.org/3.1.1/gallery/misc/table_demo.html#sphx-glr-gallery-misc-table-demo-py
+        columns = ['Planet b', 'Planet c']
+        rows = ['K [m/s]', 'P [day]', 'r.m.s. [m/s]']
+        #THIS IS A FILTHY HACK
+        try:
+            parameter_ID =7*0
+            Kb = r'{0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f}'.format(kep_fit.params.planet_params[parameter_ID], max(np.abs(kep_fit.param_errors.planet_params_errors[parameter_ID])), width = width, precision = precision)
+        except:
+            Kb = 'NA'
+        try:
+            parameter_ID =7*1
+            Kc = r'{0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f}'.format(kep_fit.params.planet_params[parameter_ID], max(np.abs(kep_fit.param_errors.planet_params_errors[parameter_ID])), width = width, precision = precision)
+        except:
+            Kc = 'NA'
+            
+        try:
+            parameter_ID =7*0 +1
+            Pb = r'{0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f}'.format(kep_fit.params.planet_params[parameter_ID], max(np.abs(kep_fit.param_errors.planet_params_errors[parameter_ID])), width = width, precision = precision)
+        except:
+            Pb = 'NA'
+        try:
+            parameter_ID =7*1 +1
+            Pc = r'{0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f}'.format(kep_fit.params.planet_params[parameter_ID], max(np.abs(kep_fit.param_errors.planet_params_errors[parameter_ID])), width = width, precision = precision)
+        except:
+            Pc = 'NA'
+            
+        try:
+            rms = '{0:{width}.{precision}f}'.format(float(kep_fit.fit_results.rms), width = width, precision = precision)
+        except:
+            rms = 'NA'
+            
+            
+            
+            
+        cell_text = [
+            [Kb, Kc],
+            [Pb, Pc],
+            [rms, '']
+                     ]
+        ax1.table(cellText=cell_text,
+                      rowLabels=rows,
+                      #rowColours=colors,
+                      colLabels=columns,
+                      loc='top')
+                      #Adjust layout to make room for the table:
+        plt.subplots_adjust(left=0.2,bottom=0.2) #TODO Check what this actually does
+                      
+                      
+    #option 2 exostriker latex table probably possible but i need somehting dumb that works
+        #table = latex_pl_param_tabular_string(kep_fit, width = 10, precision = 2)
+        #dummy does nt work either without error? 
+        #https://stackoverflow.com/questions/8524401/how-can-i-place-a-table-on-a-plot-in-matplotlib
+        #table = latex_pl_param_tabular_string_dummy(kep_fit, width = 10, precision = 2)
+        #plt.text(9,3.4,table,size=12)
+                      
 
 
     # HACK plt.savefig('RV_plot_example_time_series.%s'%(format_im), format=format_im,dpi=dpi, bbox_inches='tight' )
@@ -197,9 +259,177 @@ def plot_time_series(kep_fit, output_file):
     ax1.cla() 
     ax2.cla()
     
+def latex_pl_param_tabular_string(obj, width = 10, precision = 2):
+  
+        #text =
+        #'''       
+    #\\begin{table}[ht]
+    #% \\begin{adjustwidth}{-4.0cm}{} 
+    #% \\resizebox{0.69\\textheight}{!}
+    #% {\\begin{minipage}{1.1\\textwidth}
     
+    #\centering   
+    #\caption{{}}   
+    #\label{table:}  
     
+    text = r'''
+    \\begin{tabular}{lrrrrrrrr}     % 2 columns 
     
+    \hline\hline  \\noalign{\\vskip 0.7mm}      
+    '''
+    
+     
+    text = text + '''Parameter \hspace{0.0 mm}'''
+    for i in range(obj.npl):     
+        text = text + '''& Planet %s '''%chr(98+i)
+    text = text + '''\\\\
+    \hline \\noalign{\\vskip 0.7mm} 
+    
+    '''
+    if obj.type_fit["RV"] == True:
+        text = text + '''{0:{width}s}'''.format("$K$  [m\,s$^{-1}$]", width = 30)
+        for i in range(obj.npl):     
+            text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.params.planet_params[7*i], max(np.abs(obj.param_errors.planet_params_errors[7*i])), width = width, precision = precision)
+        text = text + '''\\\\
+        '''        
+        
+    text = text + '''{0:{width}s}'''.format("$P$  [day]", width = 30)
+    for i in range(obj.npl):     
+        text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.params.planet_params[7*i +1], max(np.abs(obj.param_errors.planet_params_errors[7*i +1])), width = width, precision = precision)
+    text = text + '''\\\\
+    '''  
+    text = text + '''{0:{width}s}'''.format("$e$  ", width = 30)
+    for i in range(obj.npl):     
+        text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.params.planet_params[7*i +2], max(np.abs(obj.param_errors.planet_params_errors[7*i +2])), width = width, precision = precision)
+    text = text + '''\\\\
+    '''  
+    text = text + '''{0:{width}s}'''.format("$\omega$  [deg]", width = 30)
+    for i in range(obj.npl):     
+        text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.params.planet_params[7*i +3], max(np.abs(obj.param_errors.planet_params_errors[7*i +3])), width = width, precision = precision)
+    text = text + '''\\\\
+    '''  
+    text = text + '''{0:{width}s}'''.format("$M_{\\rm 0}$  [deg]", width = 30)
+    for i in range(obj.npl):     
+        text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.params.planet_params[7*i +4], max(np.abs(obj.param_errors.planet_params_errors[7*i +4])), width = width, precision = precision)
+    text = text + '''\\\\
+    '''         
+    
+    if obj.mod_dynamical == True:         
+        text = text + '''{0:{width}s}'''.format("$i$  [deg]", width = 30)
+        for i in range(obj.npl):     
+            text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.params.planet_params[7*i +5], max(np.abs(obj.param_errors.planet_params_errors[7*i +5])), width = width, precision = precision)
+        text = text + '''\\\\    
+        '''      
+        text = text + '''{0:{width}s}'''.format("$\Omega$  [deg]", width = 30)
+        for i in range(obj.npl):     
+            text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.params.planet_params[7*i +6], max(np.abs(obj.param_errors.planet_params_errors[7*i +6])), width = width, precision = precision)
+        text = text + '''\\\\
+        '''            
+    
+    if obj.type_fit["Transit"] == True:
+        text = text + '''{0:{width}s}'''.format("$t_{\\rm 0}$  [day]", width = 30)
+        for i in range(obj.npl):     
+            text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.t0[i], max(abs(obj.t0_err[i])), width = width, precision = precision)
+        text = text + '''\\\\
+        '''            
+        text = text + '''{0:{width}s}'''.format("Rad.  [$R_\oplus$]", width = 30)
+        for i in range(obj.npl):     
+            text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.pl_rad[i], max(abs(obj.pl_rad_err[i])), width = width, precision = precision)
+        text = text + '''\\\\
+        '''            
+        text = text + '''{0:{width}s}'''.format("$a$  [$R_\odot$]", width = 30)
+        for i in range(obj.npl):     
+            text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.pl_a[i], max(abs(obj.pl_a_err[i])), width = width, precision = precision)
+        text = text + '''\\\\
+        '''   
+        
+    text = text + '''{0:{width}s}'''.format("$a$  [au]", width = 30)
+    for i in range(obj.npl):     
+        text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.fit_results.a[i], 0, width = width, precision = precision)
+    text = text + '''\\\\
+    '''      
+    text = text + '''{0:{width}s}'''.format("$m \sin i$  [$M_{\\rm jup}$]", width = 30)
+    for i in range(obj.npl):     
+        text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(obj.fit_results.mass[i], 0, width = width, precision = precision)
+    text = text + '''\\\\
+    '''          
+    text = text + '''{0:{width}s}'''.format("$t_{\omega}$  [day]", width = 30)
+    for i in range(obj.npl):     
+        text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format((float(obj.epoch) - (np.radians(obj.params.planet_params[7*i + 4])/(2*np.pi))*obj.params.planet_params[7*i + 1] ), 0, width = width, precision = precision)
+    text = text + '''\\\\ 
+    '''          
+    
+    text = text + '''{0:{width}s}'''.format("RV lin. trend", width = 30)            
+    text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(float(obj.params.linear_trend),float(max(np.abs(obj.param_errors.linear_trend_error))) , width = 30, precision = 6)
+    text = text + '''\\\\
+    '''   
+
+    text = text + '''{0:{width}s}'''.format("RV quad. trend", width = 30)            
+    text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(float(obj.rv_quadtr),float(max(np.abs(obj.rv_quadtr_err))) , width = 30, precision = 6)
+    text = text + '''\\\\
+    '''           
+                    
+    for i in range(obj.filelist.ndset):   
+        text = text + '''{0:{width}s}'''.format("RV$_{\\rm off}$ %s"%(i+1), width = 30)            
+        text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(float(obj.params.offsets[i]), float(max(np.abs(obj.param_errors.offset_errors[i]))), width = width, precision = precision)
+        text = text + '''\\\\
+    '''   
+    for i in range(obj.filelist.ndset):   
+        text = text + '''{0:{width}s}'''.format("RV$_{\\rm jit}$ %s"%(i+1), width = 30)            
+        text = text + '''& {0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f} '''.format(float(obj.params.jitters[i]), float(max(np.abs(obj.param_errors.jitter_errors[i]))), width = width, precision = precision)
+        text = text + '''\\\\
+    '''   
+
+    text = text + '''{0:{width}s}'''.format("$\chi^2$", width = 30)            
+    text = text + '''& {0:{width}.{precision}f} '''.format(float(obj.fit_results.chi2), width = width, precision = precision)
+    text = text + '''\\\\
+    '''    
+    text = text + '''{0:{width}s}'''.format("$\chi_{\\nu}^2$", width = 30)            
+    text = text + '''& {0:{width}.{precision}f} '''.format(float(obj.fit_results.reduced_chi2), width = width, precision = precision)
+    text = text + '''\\\\
+    '''        
+    text = text + '''{0:{width}s}'''.format("$r.m.s.$ [m\,s$^{-1}$]", width = 30)            
+    text = text + '''& {0:{width}.{precision}f} '''.format(float(obj.fit_results.rms), width = width, precision = precision)
+    text = text + '''\\\\
+    '''            
+
+    text = text + '''{0:{width}s}'''.format("$-\ln\mathcal{L}$", width = 30)            
+    text = text + '''& {0:{width}.{precision}f} '''.format(float(obj.fit_results.loglik), width = width, precision = precision)
+    text = text + '''\\\\
+    '''        
+    text = text + '''{0:{width}s}'''.format("N$_{\\rm RV}$ data", width = 30)            
+    text = text + '''& {0:{width}.{precision}f} '''.format(len(obj.fit_results.jd), width = width, precision = 0)
+    text = text + '''\\\\
+    '''         
+    
+    text = text + '''{0:{width}s}'''.format("Epoch", width = 30)            
+    text = text + '''& {0:{width}.{precision}f} '''.format(obj.epoch, width = width, precision = precision)
+    text = text + '''\\\\
+    '''           
+    
+    text = text + '''\\\\
+    \hline \\noalign{\\vskip 0.7mm} 
+    
+    '''     
+    
+    text = text + '''        
+    \end{tabular}  
+    '''
+    #% \end{minipage}}
+    #% \end{adjustwidth}
+    
+    #%\\tablefoot{\small }
+    
+    #\end{table}
+    #'''  
+    
+
+    return text
+
+def latex_pl_param_tabular_string_dummy(obj, width = 10, precision = 2):
+    
+    test_string = r'''\begin{tabular}{ c | c | c | c } & col1 & col2 & col3 \\\hline row1 & 11 & 12 & 13 \\\hline row2 & 21 & 22 & 23 \\\hline  row3 & 31 & 32 & 33 \end{tabular}'''
+    return test_string
         
 
 if __name__ == "__main__": 
@@ -342,6 +572,24 @@ if __name__ == "__main__":
         wobble_file = results_dir + f
         vels_file = output_dir + os.path.splitext(os.path.split(wobble_file)[1])[0] + ".vels"
         
+        #BEGIN EDIT
+        #1 try to access results files on network drive from laptop: Works well, use as default
+        parameters = rw.read_parameters_from_results(wobble_file)
+        carmenes_object_ID = name_dict[parameters.starname]
+        bary_starname = simbad_dict[parameters.starname]
+        #vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/" #This does nothing right?
+        #os.makedirs(vels_dir, exist_ok = True)
+        
+        res = pr.Results_ws(wobble_file
+                    , serval_dir
+                    , carmenes_object_ID
+                    , bary_starname
+                    , load_bary = True
+                    , archive = True)
+        res.apply_corrections()
+        vels_file = res.eval_vels(output_dir)
+        #END EDIT
+        
         #2.
         dataset_name = os.path.splitext(f)[0]
         print("dataset_name: ", dataset_name ,"vels_vile: ", vels_file)
@@ -350,6 +598,12 @@ if __name__ == "__main__":
         #3.
         output_file = output_dir + os.path.splitext(os.path.split(wobble_file)[1])[0] #TODO make into function?
         plot_time_series(kep_fit, output_file)
+        
+        #4 output latex_pl_param_table
+        rv.latex_pl_param_table(kep_fit, width = 10, precision = 2, asymmetric = False, file_name= output_dir + os.path.splitext(os.path.split(wobble_file)[1])[0] + '.tex', 
+                                
+                                #path= output_dir This apparently does nothing?
+                                )
         
         
         

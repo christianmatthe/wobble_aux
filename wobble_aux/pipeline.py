@@ -60,27 +60,54 @@ if __name__ == "__main__":
     #run wobble
     #BEGIN parameters rw
     results_dir_base = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/" 
+    
+     #first test  
+    '''
     pipeline_run_name = "pipeline_test_0/"
     results_dir = results_dir_base + pipeline_run_name
     os.makedirs(results_dir, exist_ok = True)
     #END parameters rw
     
-    
-    for star in tqdm(name_dict):
-        parameters = rw.Parameters(starname = star,
-                                results_dir = results_dir,
+ #first test   
+    #for star in tqdm(name_dict):
+        #parameters = rw.Parameters(starname = star,
+                                #results_dir = results_dir,
                                 
-                            data_suffix = "_vis_drift+nzp",
-                            start = 11,
-                            end = 53,
-                            chunk_size = 5,
-                            niter = 160,
-                            reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
-                            reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
-                            output_suffix = "baseline_0",
-                            plot_continuum = False)
-        rw.run_wobble(parameters)
+                            #data_suffix = "_vis_drift+nzp",
+                            #start = 11,
+                            #end = 53,
+                            #chunk_size = 5,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            #output_suffix = "baseline_0",
+                            #plot_continuum = False)
+        #rw.run_wobble(parameters)
         #TODO automatically write file list fron  this?
+    '''
+        
+    #niter test
+    niter_list = [#40,80,
+        120,160,200] 
+    for niter in niter_list:
+        pipeline_run_name = "pipeline_n{}/".format(niter)
+        results_dir = results_dir_base + pipeline_run_name
+        os.makedirs(results_dir, exist_ok = True)
+        for star in tqdm(name_dict):
+            parameters = rw.Parameters(starname = star,
+                                    results_dir = results_dir,
+                                    
+                                data_suffix = "_vis_drift+nzp",
+                                start = 11,
+                                end = 53,
+                                chunk_size = 5,
+                                niter = niter,
+                                reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                output_suffix = "n_{}".format(niter),
+                                plot_continuum = False)
+            rw.run_wobble(parameters)
+
         
 #use eval results after this
     
