@@ -73,12 +73,13 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None)
     
     for n, f in enumerate(tqdm(filelist)):
         sp = fits.open(f)
-        
         if not serval_dir:
             print("no serval directory supplied. Not correcting for NZP")
             #include NZP by adding them to drifts before correction
         else:
+            #TODO HACK NOTE THis NZP SHIFT SHOULD BE A PARAMETER
             nzp_shift = True
+            #TODO HACK NOTE THis NZP SHIFT SHOULD BE A PARAMETER
             carmenes_object_ID = str(sp[0].header['OBJECT']).strip() #ID in header has extra space in front of it
             if carmenes_object_ID != carmenes_object_ID_master:
                 print()
@@ -89,7 +90,6 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None)
                 carmenes_object_ID = carmenes_object_ID_master
             ser_avcn = np.loadtxt(serval_dir+ carmenes_object_ID +"/"+ carmenes_object_ID +".avcn.dat")
             nzp = ser_avcn[:,9]
-        
         try:
             pipeline_rvs[n] = sp[0].header['HIERARCH CARACAL SERVAL RV'] * 1.e3 # m/s
             pipeline_sigmas[n] = sp[0].header['HIERARCH CARACAL SERVAL E_RV'] * 1.e3 # m/s
@@ -104,13 +104,17 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None)
             continue
         if not starname:
             starname = name_dict[sp[0].header['OBJECT']]
+            
         jd_start = Time(sp[0].header['DATE-OBS'])
         jd_mid = jd_start.jd + sp[0].header['HIERARCH CARACAL TMEAN'] * 1/(24*60*60)
         dates_utc[n] = jd_mid
         # for nir ignore all dates before 2016. recommended by Adrian
+        #print("before bary")
         date = bary.JDUTC_to_BJDTDB(jd_mid, starname,
                                                            leap_update = False #HACK barycorrpy issue 27
                                                            )[0]
+        #print("after bary")
+        
         if date >=2457754.5:#1 JAN 2017
             dates[n] = date
         else:

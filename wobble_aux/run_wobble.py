@@ -307,6 +307,8 @@ def run_wobble(parameters):
     os.makedirs(plot_dir, exist_ok = True)
     
     start_time = p.start_time = time()
+    
+
     #generate epoch list
     # if parameters has been passed a global epochs list use this going forward. This is primarily used by regularization.py
     try: #skipping the except will make major issues unless dropped epochs and orders are already handled
@@ -342,6 +344,7 @@ def run_wobble(parameters):
     print("orders_list", orders_list)
     
     chunks = p.chunks = chunk_list(p.start, p.end, p.chunk_size, p.orders_list)
+    print("Chunks: ", chunks)
     #Loop over chunks
     for i in range(len(chunks)):
         #pass parameters object to chunk script
@@ -351,8 +354,14 @@ def run_wobble(parameters):
         #start chunk script
         os.system("python3  {0}/chunk.py".format(os.path.dirname(os.path.abspath(__file__))))
         
+        '''HACK to be removed
+        #import parameters back after possible changes in chunk
+        with open(os.path.dirname(os.path.abspath(__file__)) + "/" + "carmenes_aux_files/chunk_parameters.pkl", "rb") as f:
+            p = dill.load(f)
+        '''
+    
     print("all chunks optimized: writing combined file") 
-    results_file_stitch(chunks, results_file, temp_dir)
+    results_file_stitch(p.chunks, results_file, temp_dir)
     
     #Combine orders
     results = wobble.Results(filename = results_file)

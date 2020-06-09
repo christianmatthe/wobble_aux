@@ -383,6 +383,16 @@ class Results_ws():
         vels_filename = vels_dir + file_basename + '.vels'
         np.savetxt(vels_filename, array, fmt ='%.18f')
         return vels_filename
+    
+    def eval_vels_serval(self, vels_dir):
+    #outputs vels file from results_ws object
+        #output serval results
+        array = np.array([self.ser_avcn[:,0], self.ser_avcn[:,1], self.ser_avcn[:,2]])
+        array = np.ndarray.transpose(array)
+        array = array[array[:,0].argsort()] #Sort by 0th (date) column #HACK should sort be during data creation?
+        vels_filename = vels_dir + self.bary_starname + "_serval_avcn" + '.vels'
+        np.savetxt(vels_filename, array, fmt ='%.18f')
+        return vels_filename
 
 
 if __name__ == "__main__":

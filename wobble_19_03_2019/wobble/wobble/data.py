@@ -53,6 +53,7 @@ class Data(object):
                     padding = 2,
                     min_snr = 5.,
                     log_flux = True,
+                    chunkQ = False, #Flag to set for different behavior during chunk inn run_wobble (main aim diasble order and epoch cutting while retaining data point cutting)
                     **kwargs):
         origin_file = filepath+filename
         self.read_data(origin_file, orders=orders, epochs=epochs)
@@ -60,30 +61,47 @@ class Data(object):
         
         orders = np.asarray(self.orders)
         orders_start = orders
-        #HACK NOTE #NOTE change 25/10/2019 snr+data_suffix , temporarily removed order cutting since it breaks orderswise optimization, and was ignored before anyways
-        snrs_by_order = np.sqrt(np.nanmean(self.ivars, axis=(1,2)))
-        orders_to_cut = snrs_by_order < min_snr
-        if np.sum(orders_to_cut) > 0:
-            print("Data: Dropping orders {0} because they have average SNR < {1:.0f}".format(orders[orders_to_cut], min_snr))
-            orders = orders[~orders_to_cut]
-            self.read_data(origin_file, orders=orders, epochs=epochs) # overwrite with new data
-            self.mask_low_pixels(min_flux=min_flux, padding=padding, min_snr=min_snr)
-        if len(orders) == 0:
-            print("All orders failed the quality cuts with min_snr={0:.0f}.".format(min_snr))
-            raise AllDataDropped
         
-        epochs = np.asarray(self.epochs)
-        snrs_by_epoch = np.sqrt(np.nanmean(self.ivars, axis=(0,2)))
-        epochs_to_cut = snrs_by_epoch < min_snr
-        if np.sum(epochs_to_cut) > 0:
-            print("Data: Dropping epochs {0} because they have average SNR < {1:.0f}".format(epochs[epochs_to_cut], min_snr))
-            epochs = epochs[~epochs_to_cut]
-            self.read_data(origin_file, orders=orders, epochs=epochs) # overwrite with new data
-            self.mask_low_pixels(min_flux=min_flux, padding=padding, min_snr=min_snr)
-        if len(epochs) == 0:
-            print("All epochs failed the quality cuts with min_snr={0:.0f}.".format(min_snr))
-            raise AllDataDropped
-            #return
+        if chunkQ == False: #Centralizes order and epoch cutting to top level only
+            #HACK NOTE #NOTE change 25/10/2019 snr+data_suffix , temporarily removed order cutting since it breaks orderswise optimization, and was ignored before anyways
+            snrs_by_order = np.sqrt(np.nanmean(self.ivars, axis=(1,2)))
+            #disable order cutting here as it is done in continuum normalize
+            orders_to_cut = snrs_by_order < min_snr
+            print("Low SNR orders {0}: average SNR < {1:.0f} Note: not dropped".format(orders[orders_to_cut], min_snr))
+            '''
+            #if np.sum(orders_to_cut) > 0:
+                #print("Data: Dropping orders {0} because they have average SNR < {1:.0f}".format(orders[orders_to_cut], min_snr))
+                #orders = orders[~orders_to_cut]
+                #self.read_data(origin_file, orders=orders, epochs=epochs) # overwrite with new data
+                #self.mask_low_pixels(min_flux=min_flux, padding=padding, min_snr=min_snr)
+            #if len(orders) == 0:
+                #print("All orders failed the quality cuts with min_snr={0:.0f}.".format(min_snr))
+                #raise AllDataDropped
+            '''
+            
+            
+            epochs = np.asarray(self.epochs)
+            snrs_by_epoch = np.sqrt(np.nanmean(self.ivars, axis=(0,2)))
+            epochs_to_cut = snrs_by_epoch < min_snr
+            if np.sum(epochs_to_cut) > 0:
+                print("Data: Dropping epochs {0} because they have average SNR < {1:.0f}".format(epochs[epochs_to_cut], min_snr))
+                epochs = epochs[~epochs_to_cut]
+                self.read_data(origin_file, orders=orders, epochs=epochs) # overwrite with new data
+                self.mask_low_pixels(min_flux=min_flux, padding=padding, min_snr=min_snr)
+            if len(epochs) == 0:
+                print("All epochs failed the quality cuts with min_snr={0:.0f}.".format(min_snr))
+                raise AllDataDropped
+                #return
+                
+        elif chunkQ == True:
+            #just in case these ar eneeded anywhere
+            snrs_by_order = np.sqrt(np.nanmean(self.ivars, axis=(1,2)))
+            
+            epochs = np.asarray(self.epochs)
+            snrs_by_epoch = np.sqrt(np.nanmean(self.ivars, axis=(0,2)))
+            
+            #Pixel masking already done above
+            
             
         # log and normalize:
         self.ys = np.log(self.fluxes) 
@@ -109,7 +127,7 @@ class Data(object):
     def read_data(self, origin_file, orders = None, epochs = None):
         """Read origin file and set up data attributes from it"""
         # TODO: add asserts to check data are finite, no NaNs, non-negative ivars, etc
-        with h5py.File(origin_file) as f:
+        with h5py.File(origin_file, 'r') as f: #04.06.2020 added explicit mode 'r' due to h5py 3.0 deprecation
             self.origin_file = origin_file
             if orders is None:
                 orders = np.arange(len(f['data']))
@@ -270,7 +288,8 @@ class Data(object):
                     print("Continuum normalization of order {0} epoch {1} failed. Dropping order {0}".format(self.orders[r], self.epochs[n]))
                     self.drop_orders.append(self.orders[r]) #append to drop orders list
                     print("self.drop_orders: ", self.drop_orders)
-                    continue
+                    #continue
+                    break #in contrast to continue this should break the entireloop and go to  the next order instead of next epoch
                     
                     
                 
@@ -287,7 +306,21 @@ class Data(object):
                     plt.close(fig)
                 #self.ys[r][n] -= fit
                 #fit needs to be interpolated to match  grid before mask
-                fit_function = interpolate.interp1d(xs_masked[r][n].compressed(), fit, fill_value = "extrapolate")#requires numpy 1.17 -> creates deprecation warnings
+                try: #just for testing where it breaks
+                    fit_function = interpolate.interp1d(xs_masked[r][n].compressed(), fit, fill_value = "extrapolate")#requires numpy 1.17 -> creates deprecation warnings
+                    #HACK If this fails for whatever reason drop the order
+                except:                 
+                    print("dropping order {0} due to epoch {1} continuum interpolation error. xs_masked[r][n].compressed():".format(self.orders[r], self.epochs[n]))
+                    print(xs_masked[r][n].compressed())
+                    
+                    self.drop_orders.append(self.orders[r]) #append to drop orders list
+                    print("self.drop_orders: ", self.drop_orders)
+                    break # jump to next order
+                    
+                    ##still throw error
+                    #fit_function = interpolate.interp1d(xs_masked[r][n].compressed(), fit, fill_value = "extrapolate")#requires numpy 1.17 -> creates deprecation warnings
+                    
+                    
                 self.ys[r][n] -= fit_function(self.xs[r][n])
                 #except:
                     #print("ERROR: Data: order {0}, epoch {1} could not be continuum normalized!".format(self.orders[r],self.epochs[n]))
