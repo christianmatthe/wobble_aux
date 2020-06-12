@@ -54,7 +54,7 @@ def dimensions(arm):
         return
     return M, R
 
-def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None):
+def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None, nzp_shift = True, drift_shift = True):
     names = pd.read_csv(os.path.dirname(os.path.abspath(__file__)) + '/carmenes_aux_files/name_conversion_list.csv')
     name_dict = dict(zip(names['#Karmn'], names['Name']))
     # input : a list of filenames
@@ -74,21 +74,22 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None)
     for n, f in enumerate(tqdm(filelist)):
         sp = fits.open(f)
         
-        if not serval_dir:
-            print("no serval directory supplied. Not correcting for NZP")
-            #include NZP by adding them to drifts before correction
-        else:
-            nzp_shift = True
-            carmenes_object_ID = str(sp[0].header['OBJECT']).strip() #ID in header has extra space in front of it
-            if carmenes_object_ID != carmenes_object_ID_master:
-                print()
-                print("mismatched object ID: " ,carmenes_object_ID)
-                print("n, f:", n, f)
-                print()
-                #use master instead:
-                carmenes_object_ID = carmenes_object_ID_master
-            ser_avcn = np.loadtxt(serval_dir+ carmenes_object_ID +"/"+ carmenes_object_ID +".avcn.dat")
-            nzp = ser_avcn[:,9]
+        if nzp_shift = True:
+            if not serval_dir:
+                raise Exception("no serval directory supplied. Cannot correct for NZP")
+                #include NZP by adding them to drifts before correction
+            else:
+                #nzp_shift = True
+                carmenes_object_ID = str(sp[0].header['OBJECT']).strip() #ID in header has extra space in front of it
+                if carmenes_object_ID != carmenes_object_ID_master:
+                    print()
+                    print("mismatched object ID: " ,carmenes_object_ID)
+                    print("n, f:", n, f)
+                    print()
+                    #use master instead:
+                    carmenes_object_ID = carmenes_object_ID_master
+                ser_avcn = np.loadtxt(serval_dir+ carmenes_object_ID +"/"+ carmenes_object_ID +".avcn.dat")
+                nzp = ser_avcn[:,9]
         
         try:
             pipeline_rvs[n] = sp[0].header['HIERARCH CARACAL SERVAL RV'] * 1.e3 # m/s
@@ -159,11 +160,12 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None)
         for r in range(R):
             data[r][n, :] = spec[r, :]
             ivars[r][n, :] = 1 / sig[r, :]**2
-            #xs[r][n, :] = wave[r, :] # replaced with drfit corrected version
-    
-            for l in range(len(data[r][n,:])):
-                lambda_drifts = lambda_drift(total_drifts[n], wave[r, l])
-                xs[r][n, l] = wave[r, l] - lambda_drifts
+            if drift_shift = False:
+                xs[r][n, :] = wave[r, :] # replaced with drfit corrected version
+            else:
+                for l in range(len(data[r][n,:])):
+                    lambda_drifts = lambda_drift(total_drifts[n], wave[r, l])
+                    xs[r][n, l] = wave[r, l] - lambda_drifts
 
     # delete data with missing attributes:
     for r in range(R):
@@ -243,7 +245,7 @@ def split_orders_file(filename):
                     del g[key]
                 g.create_dataset(key, data = temp)
                 
-def make_data(starname, arm, data_directory, simbad_name = None, serval_dir = None, nzp_shift = True):
+def make_data(starname, arm, data_directory, simbad_name = None, serval_dir = None, nzp_shift = True, drift_shift = True):
     #if not simbad_name:
         #simbad_name = starname
     #print(starname)
