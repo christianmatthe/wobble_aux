@@ -41,9 +41,47 @@ print("running wobble on star {0} with K_star = {1}, K_t = {2}, orders[{3},{4})"
 orders = chunks[i]
 print("orders: ", orders)
 data = wobble.Data(data_file, orders=orders, epochs=epochs_list, min_flux=10**-5, 
-                   min_snr=0,
+                   #min_snr=0,
+                   min_snr = p.min_snr,
+                   chunkQ = True,
                    parameters = p
                    )
+'''
+ #################                  )
+#TODO Apply continnuum norm failed arder cutting: delete data.drop_orders fromm chunk and order list
+#HACK this ignores the underlying issue: WHY ARE there different results in the first place?
+#DIDNN'T WORK Note self.drop_orders:  [15]
+#data.drop_orders [15]
+#p.drop_orders [[15]] IIs of different format
+
+try:
+    for order in data.drop_orders:
+        p.drop_orders.append(order) #append to drop orders list
+    print("data.drop_orders", data.drop_orders)
+    print("p.drop_orders", p.drop_orders)
+except AttributeError:
+    print("data.drop_orders is not defined")
+    
+orders_list = p.orders_list = [x for x in p.orders_list if x not in p.drop_orders]
+#delete order from chunk list
+for j, chunk in enumerate(chunks):
+    chunk = [x for x in chunk if x not in p.drop_orders]
+    chunks[j] = chunk
+p.chunks = chunks
+#update orders for  this chunk
+orders = chunks[i]
+#initialize chunk based variables
+reg_file_star_chunk, reg_file_t_chunk = reg_chunk(chunks[i], p.reg_file_star, p.reg_file_t)
+start_order = chunks[i][0]
+end_order = chunks[i][-1]
+#NOTE Would require passing parammeters back up
+with open(os.path.dirname(os.path.abspath(__file__)) + "/carmenes_aux_files/chunk_parameters.pkl", "wb") as f:
+    dill.dump(p, f)
+#Sometimes the chunkwise continuum normilization finds different drop orders DUE TO DIFFERENT MIN SNR SETTING This could be  relatively easily fixed, bbut is it actually a bigger proble since low snr points in actually used continuum?
+#Solution: set chunk flag in Data class and disallow order cutting so mmin_snr can be set to p.min_snr : didn't work
+##########
+'''
+
 print("data.R: ", data.R)
 results = wobble.Results(data=data)
 print("results.R: ", results.R)

@@ -257,6 +257,50 @@ class Results_ws():
             
         '''
         
+    #old version pre error propagation
+    #def apply_corrections(self, 
+                          #correct_w_for_drift = False,
+                          #correct_w_for_SA = False,
+                          #correct_w_for_NZP = False,
+                          
+                          #correct_drift = True, correct_NZP = True, correct_SA = True,
+                          
+                          #inverse_NZP = False):
+        #ser_avcn = self.ser_avcn
+            
+        #ser_corr = np.zeros(len(self.ser_avcn))
+        #if correct_drift: #3 drift
+            #ser_corr -=  ser_avcn[:,3]
+        #if correct_SA:    #8 SA 
+            #ser_corr -=  ser_avcn[:,8]
+        #if correct_NZP:   #9 NZP
+            #ser_corr -=  ser_avcn[:,9]
+        #ser_corr_wob = np.zeros(ser_corr.shape)
+        ##if (correct_drift and not correct_w_for_drift): # in case wobble was already drift corrected in make_data
+            ###ser_corr_wob += ser_avcn[:,3] #FOR SOME reason this assignment also affects ser_corr
+            ##ser_corr_wob = ser_corr_wob + ser_avcn[:,3]
+        #if correct_w_for_drift: #3 drift
+            #ser_corr_wob -=  ser_avcn[:,3]
+        #if correct_w_for_SA:    #8 SA 
+            #ser_corr_wob -=  ser_avcn[:,8]
+        #if correct_w_for_NZP:   #9 NZP
+            #ser_corr_wob -=  ser_avcn[:,9]
+            
+        #if inverse_NZP:
+            #ser_corr_wob = ser_corr_wob + 0.5 * ser_avcn[:,9]
+        ##apply to object
+        #self.ser_corr = ser_corr
+        #self.ser_corr_wob = ser_corr_wob
+        
+        ##correct ser_rvo
+        #for j in range(len(self.ser_rvo)):
+            #self.ser_rvo[j,5:] = self.ser_rvo[j,5:] + ser_corr[j]
+            
+        ## TODO error propagation
+        #self.w_RVs_barycorr += ser_corr_wob
+        #self.w_RVs += ser_corr_wob
+        #self.w_order_RVs += ser_corr_wob
+        
         
     def apply_corrections(self, 
                           correct_w_for_drift = False,
@@ -296,7 +340,15 @@ class Results_ws():
         for j in range(len(self.ser_rvo)):
             self.ser_rvo[j,5:] = self.ser_rvo[j,5:] + ser_corr[j]
             
-        # TODO error propagation
+        #error propagation
+        #NOTE indexes are shifted by 1 sinnce list starts at 1 python at 0
+        #- NZP error "11 D      m/s     E_NZP       Error for NZP"
+        #- drift error "    5 D      m/s     E_DRIFT     CARACAL drift measure error"
+        #- SA error?
+        self.w_RVs_er = np.sqrt(np.square(self.w_RVs_er) + np.square(ser_avcn[:,10]) + np.square(ser_avcn[:,4]))
+        
+        
+        
         self.w_RVs_barycorr += ser_corr_wob
         self.w_RVs += ser_corr_wob
         self.w_order_RVs += ser_corr_wob
@@ -329,6 +381,16 @@ class Results_ws():
         array = np.ndarray.transpose(array)
         array = array[array[:,0].argsort()] #Sort by 0th (date) column #HACK should sort be during data creation?
         vels_filename = vels_dir + file_basename + '.vels'
+        np.savetxt(vels_filename, array, fmt ='%.18f')
+        return vels_filename
+    
+    def eval_vels_serval(self, vels_dir):
+    #outputs vels file from results_ws object
+        #output serval results
+        array = np.array([self.ser_avcn[:,0], self.ser_avcn[:,1], self.ser_avcn[:,2]])
+        array = np.ndarray.transpose(array)
+        array = array[array[:,0].argsort()] #Sort by 0th (date) column #HACK should sort be during data creation?
+        vels_filename = vels_dir + self.bary_starname + "_serval_avcn" + '.vels'
         np.savetxt(vels_filename, array, fmt ='%.18f')
         return vels_filename
 

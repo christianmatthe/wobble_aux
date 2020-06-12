@@ -188,6 +188,7 @@ class Results(object):
         basename = component_name+'_'
         self.all_rvs = np.asarray(getattr(self, basename+'rvs'))
         self.all_ivars = np.asarray(getattr(self, basename+'ivars_rvs'))
+        print('self.all_ivars', self.all_ivars) #TODO remove
         # initial guess
         x0_order_rvs = np.median(self.all_rvs, axis=1)
         x0_time_rvs = np.median(self.all_rvs - np.tile(x0_order_rvs[:,None], (1, self.N)), axis=0)

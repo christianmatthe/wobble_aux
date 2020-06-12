@@ -105,13 +105,17 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None,
             continue
         if not starname:
             starname = name_dict[sp[0].header['OBJECT']]
+            
         jd_start = Time(sp[0].header['DATE-OBS'])
         jd_mid = jd_start.jd + sp[0].header['HIERARCH CARACAL TMEAN'] * 1/(24*60*60)
         dates_utc[n] = jd_mid
         # for nir ignore all dates before 2016. recommended by Adrian
+        #print("before bary")
         date = bary.JDUTC_to_BJDTDB(jd_mid, starname,
                                                            leap_update = False #HACK barycorrpy issue 27
                                                            )[0]
+        #print("after bary")
+        
         if date >=2457754.5:#1 JAN 2017
             dates[n] = date
         else:
