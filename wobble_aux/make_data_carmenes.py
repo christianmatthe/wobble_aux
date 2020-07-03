@@ -74,7 +74,7 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None,
     for n, f in enumerate(tqdm(filelist)):
         sp = fits.open(f)
         
-        if nzp_shift = True:
+        if nzp_shift == True:
             if not serval_dir:
                 raise Exception("no serval directory supplied. Cannot correct for NZP")
                 #include NZP by adding them to drifts before correction
@@ -164,7 +164,7 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None,
         for r in range(R):
             data[r][n, :] = spec[r, :]
             ivars[r][n, :] = 1 / sig[r, :]**2
-            if drift_shift = False:
+            if drift_shift == False:
                 xs[r][n, :] = wave[r, :] # replaced with drfit corrected version
             else:
                 for l in range(len(data[r][n,:])):
@@ -254,12 +254,23 @@ def make_data(starname, arm, data_directory, simbad_name = None, serval_dir = No
         #simbad_name = starname
     #print(starname)
     filelist = glob.glob(data_directory + 'CARM_raw_data/{0}/*sci-gtoc-{1}_A.fits'.format(starname, arm))
-    if nzp_shift == True:
-        data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname = simbad_name, serval_dir = serval_dir)
-        hdffile = data_directory+'{0}_{1}_drift+nzp_e2ds.hdf5'.format(starname, arm)
+    
+    if drift_shift == True:
+        drift_str = "drift"
+        if nzp_shift == True:
+            nzp_str = "+nzp_"
+        else:
+            nzp_str = ""
+            drift_str = "drift_"
     else:
-        data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname= simbad_name)
-        hdffile = data_directory+'{0}_{1}_drift_shift_e2ds.hdf5'.format(starname, arm)
+        drift_str = ""
+        nzp_str = ""
+        
+    data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname = simbad_name, serval_dir = serval_dir, nzp_shift = nzp_shift, drift_shift = drift_shift)
+    hdffile = data_directory+'{0}_{1}_{2}{3}e2ds.hdf5'.format(starname, arm, drift_str, nzp_str)
+    #else:
+        #data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc = read_data_from_fits(filelist, arm= arm, starname= simbad_name, nzp_shift = nzp_shift, drift_shift = drift_shift)
+        #hdffile = data_directory+'{0}_{1}_drift_shift_e2ds.hdf5'.format(starname, arm)
     write_data(data, ivars, xs, pipeline_rvs, pipeline_sigmas, dates, bervs, airms, drifts, dates_utc, filelist, hdffile)
     if arm == "nir":
         split_orders_file(hdffile) # save  an aditional split copy

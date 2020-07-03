@@ -498,6 +498,7 @@ def latex_pl_param_tabular_string(obj, width = 10, precision = 2):
 
     return text
 
+
 def latex_pl_param_tabular_string_dummy(obj, width = 10, precision = 2):
     
     test_string = r'''\begin{tabular}{ c | c | c | c } & col1 & col2 & col3 \\\hline row1 & 11 & 12 & 13 \\\hline row2 & 21 & 22 & 23 \\\hline  row3 & 31 & 32 & 33 \end{tabular}'''

@@ -191,7 +191,7 @@ class Parameters:
     continuum_order : `int` (default `1`)
         (wobble default is 6)
         order of the polynomial used for normalizing the spectra
-    continuum_nsigma : [`float`, `float`] (default `[0.5,1]`)
+    continuum_nsigma : [`float`, `float`] (default `[0.5,1]`for NIR, `[0.3,3]` for VIS )
         data points this many sigma deviations [down, up] from the continuum fit are cut every step during continuum normalization
     plot_continuum : `bool` (default `False`)
         whether or not to output plots of the continua during data import (Note: a LOT of plots (orders*epochs))
@@ -219,7 +219,7 @@ class Parameters:
                  min_snr = 60,
                  plots = True,
                  continuum_order = 1,
-                 continuum_nsigma = [0.5,1],
+                 continuum_nsigma = 'default',
                  plot_continuum  = False
                  ):
         self.starname = starname
@@ -238,7 +238,18 @@ class Parameters:
         self.min_snr = min_snr
         self.plots = plots
         self.continuum_order = continuum_order
-        self.continuum_nsigma = continuum_nsigma
+        #Redo Default continuum sigmas [0.3,3.0] for vis (wobble original), [0.5,1] for NIR
+        #HACK Workaround to determine VIS or NIR from data suffix, could be done more cleanly. Ideally include "ode" parameter with options vis and nir
+        if continuum_nsigma == 'default':
+            if '_vis_' in data_suffix:
+                self.continuum_nsigma = [0.3,3.0]
+            elif '_nir_' in data_suffix:
+                self.continuum_nsigma = [0.5,1.0]
+            else: 
+                raise Exception("data suffix incopatible with default continuum_nsigma: must indicate '_vis_' or '_nir_' ")
+        else:
+            self.continuum_nsigma = continuum_nsigma
+            
         self.plot_continuum  = plot_continuum
         self.drop_orders = []
         '''

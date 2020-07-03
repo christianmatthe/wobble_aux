@@ -67,9 +67,9 @@ if __name__ == "__main__":
     
     }
     
-    '''
-    #BEGIN make_data_carmenes
     
+    #BEGIN make_data_carmenes
+    '''
     data_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/"
     #data_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/test/"#NOTE testing issues only has GJ536 data
     serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/" #read data already includes name dictionary
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         starname = star
         simbad_name = simbad_dict[star]
         arm = "vis"
-        mdc.make_data(starname, arm, data_directory, simbad_name = simbad_name, serval_dir = serval_dir, nzp_shift = True)
+        mdc.make_data(starname, arm, data_directory, simbad_name = simbad_name, serval_dir = serval_dir, nzp_shift = True, drift_shift = True
     '''
     #END make_data_carmenes
         
@@ -165,42 +165,132 @@ if __name__ == "__main__":
             #rw.run_wobble(parameters)
     ###END GJ876 more niter test
     
-    #BEGIN no snr cutting (min snr 5) test
+    ##BEGIN no snr cutting (min snr 5) test
+    #name_dict = name_dict_master
+    ##name_dict = {"Teegarden" : "J02530+168"}
+    ##name_dict = {"GJ3512"    : "J08413+594"}
+    
+    
+    #name_dict = name_dict_master
+    #del name_dict["GJ3512"]
+    
+    #snr_list = [#5
+                ##,30,15,
+                #45,60
+                #] 
+    #for min_snr in snr_list:
+        #pipeline_run_name = "pipeline_min_snr{}/".format(min_snr)
+        #results_dir = results_dir_base + pipeline_run_name
+        #os.makedirs(results_dir, exist_ok = True)
+        #for star in tqdm(name_dict):
+            #parameters = rw.Parameters(starname = star,
+                                    #results_dir = results_dir,
+                                    
+                                    #min_snr = min_snr,
+                                    
+                                #data_suffix = "_vis_drift+nzp",
+                                #start = 11,
+                                #end = 53,  #CHNGE TIS BACK TO 53
+                                #chunk_size = 5,
+                                #niter = 160,
+                                #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                #output_suffix = "min_snr{}".format(min_snr),
+                                #plot_continuum = False)
+            #rw.run_wobble(parameters)
+    #END no snr cutting (min snr 5) test
+    
+    #BEGIN no snr cutting (min snr 5) test, with Niter list
     name_dict = name_dict_master
     #name_dict = {"Teegarden" : "J02530+168"}
     #name_dict = {"GJ3512"    : "J08413+594"}
+    name_dict = {"GJ876" : name_dict_master["GJ876"]}
     
-    name_dict = name_dict_master
-    del name_dict["GJ3512"]
     
-    snr_list = [#5
+    #name_dict = name_dict_master
+    #del name_dict["GJ3512"]
+    
+    #snr_list = [5
                 #,30,15,
-                45,60
-                ] 
-    for min_snr in snr_list:
-        pipeline_run_name = "pipeline_min_snr{}/".format(min_snr)
-        results_dir = results_dir_base + pipeline_run_name
-        os.makedirs(results_dir, exist_ok = True)
-        for star in tqdm(name_dict):
-            parameters = rw.Parameters(starname = star,
-                                    results_dir = results_dir,
+                #45,60
+                #] 
+    #for min_snr in snr_list:
+        #pipeline_run_name = "pipeline_min_snr{}/".format(min_snr)
+        #results_dir = results_dir_base + pipeline_run_name
+        #os.makedirs(results_dir, exist_ok = True)
+        #for star in tqdm(name_dict):
+            #try:
+                #niter = niter_dict[star]
+            #except:
+                #print(star, " not in  niter_dict, using niter = 160 as default")
+                #niter = 160
+        
+            #parameters = rw.Parameters(starname = star,
+                                    #results_dir = results_dir,
                                     
-                                    min_snr = min_snr,
+                                    #min_snr = min_snr,
                                     
-                                data_suffix = "_vis_drift+nzp",
-                                start = 11,
-                                end = 53,  #CHNGE TIS BACK TO 53
-                                chunk_size = 5,
-                                niter = 160,
-                                reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
-                                reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
-                                output_suffix = "min_snr{}".format(min_snr),
-                                plot_continuum = False)
-            rw.run_wobble(parameters)
-    #END no snr cutting (min snr 5) test
+                                #data_suffix = "_vis_drift+nzp",
+                                #start = 11,
+                                #end = 53,  #CHNGE TIS BACK TO 53
+                                #chunk_size = 5,
+                                #niter = 160,
+                                #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                #output_suffix = "min_snr{}".format(min_snr),
+                                #plot_continuum = False)
+            #rw.run_wobble(parameters)
+    ##END no snr cutting (min snr 5) test
 
 
-    #BEGIN Prototype Niter_dict
+    ##BEGIN Prototype Niter_dict
+    #pipeline_run_name = "pipeline_niter_dict/"
+    #results_dir = results_dir_base + pipeline_run_name
+    #os.makedirs(results_dir, exist_ok = True)
+    ##name_dict = name_dict_master
+    #name_dict = {"GJ876" : name_dict_master["GJ876"]}
+    #for star in tqdm(name_dict):
+        #try:
+            #niter = niter_dict[star]
+        #except:
+            #print(star, " not in  niter_dict, using niter = 160 as default")
+            #niter = 160
+        #parameters = rw.Parameters(starname = star,
+                                #results_dir = results_dir,
+                                
+                                #min_snr = 60,
+                                
+                            #data_suffix = "_vis_drift+nzp",
+                            #start = 11,
+                            #end = 53,  #CHNGE TIS BACK TO 53
+                            #chunk_size = 5,
+                            #niter = niter,
+                            #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            #output_suffix = "n_{}".format(niter),
+                            #plot_continuum = False)
+        #rw.run_wobble(parameters)
+    ##END 
+        
+    #BEGIN No drift correction tests    
+    ##BEGIN make_data_carmenes
+    #data_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/"
+    ##data_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/test/"#NOTE testing issues only has GJ536 data
+    #serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/" #read data already includes name dictionary
+    
+    
+    #name_dict = name_dict_master
+    #for star in tqdm(name_dict):
+        #starname = star
+        #simbad_name = simbad_dict[star]
+        #arm = "vis"
+        #mdc.make_data(starname, arm, data_directory, simbad_name = simbad_name, serval_dir = serval_dir, nzp_shift = False, drift_shift = False)
+    
+    #END make_data_carmenes
+    #run regular opti on all stars without drift
+    pipeline_run_name = "pipeline_no_drift_corr/"
+    results_dir = results_dir_base + pipeline_run_name
+    os.makedirs(results_dir, exist_ok = True)
     name_dict = name_dict_master
     for star in tqdm(name_dict):
         try:
@@ -211,20 +301,21 @@ if __name__ == "__main__":
         parameters = rw.Parameters(starname = star,
                                 results_dir = results_dir,
                                 
-                                min_snr = min_snr,
+                                min_snr = 60,
                                 
-                            data_suffix = "_vis_drift+nzp",
+                            data_suffix = "_vis",
                             start = 11,
                             end = 53,  #CHNGE TIS BACK TO 53
                             chunk_size = 5,
                             niter = niter,
                             reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
                             reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
-                            output_suffix = "min_snr{}".format(min_snr),
+                            output_suffix = "no_drift_corr",
                             plot_continuum = False)
         rw.run_wobble(parameters)
-    #END 
-        
+    #END No drift correction tests    
+    
+    
 #use eval results after this
     
     
