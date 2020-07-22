@@ -221,7 +221,7 @@ class Parameters:
                  plots = True,
                  continuum_order = 1,
                  continuum_nsigma = 'default',
-                 plot_continuum  = False
+                 plot_continuum  = False,
                  mask_tellurics = "no_mask"
                  ):
         self.starname = starname
@@ -420,9 +420,37 @@ if __name__ == "__main__":
                             niter = 160,
                             reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
                             reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
-                            output_suffix = "eval_example_2",
-                            plot_continuum = False)
+                            output_suffix = "mask_tellurics_test",
+                            plot_continuum = True,
+                            mask_tellurics = "mask"
+                            )
     run_wobble(parameters)
+    
+    parameters = Parameters(starname = "GJ1148",
+                            data_suffix = "_vis_drift+nzp",
+                            start = 11,
+                            end = 53,
+                            chunk_size = 5,
+                            niter = 160,
+                            reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            output_suffix = "inverted_mask_test",
+                            plot_continuum = True,
+                            mask_tellurics = "inverted_mask" #inverted mask seems to break commbine since some orders containn no or barely any masked points
+                            )
+    run_wobble(parameters)
+    
+    #parameters = Parameters(starname = "GJ1148",
+                            #data_suffix = "_vis_drift+nzp",
+                            #start = 11,
+                            #end = 53,
+                            #chunk_size = 5,
+                            #niter = 160,
+                            #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            #output_suffix = "eval_example_2",
+                            #plot_continuum = False)
+    #run_wobble(parameters)
     
     ''' both are visually dificult to judge in time series
     #laptop test example

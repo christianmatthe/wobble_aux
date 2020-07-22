@@ -107,7 +107,9 @@ class Data(object):
         self.ys = np.log(self.fluxes) 
         self.drop_orders = [] # empty list to be used by continuum normalize
         print("self.drop_orders define: ", self.drop_orders)
-        self.continuum_normalize(**kwargs) 
+        self.continuum_normalize(**kwargs)
+        #mask out pixels depending on telluric mask settings in parameters (**kwargs)
+        self.mask_telluric_mask_pixels(**kwargs)
         
         # HACK - optionally un-log it:
         if not log_flux:
@@ -154,7 +156,7 @@ class Data(object):
             self.R = len(orders) # number of orders
             self.orders = orders # indices of orders in origin_file
             self.ivars = [self.fluxes[i]**2 * self.flux_ivars[i] for i in range(self.R)] # ivars for log(fluxes)
-    
+            
     def mask_low_pixels(self, min_flux = 1., padding = 2, min_snr = 5.):
         """Set ivars to zero for pixels and edge regions that are bad."""
         # mask out low pixels:
@@ -172,12 +174,9 @@ class Data(object):
         # find bad regions in masked spectra:
         for r in range(self.R):
             self.trim_bad_edges(r, min_snr=min_snr) # HACK
-            
+    
     #NOTE not one of wobbles standart functions
-    def mask_telluric_mask_pixels(self, **kwargs):
-        """Set ivars to zero for masked regions that are bad."""
-        #NOTE needs to be applied after continuum noorm if use for inverted selection (Masked regions only)
-        
+    def gen_telluric_mask(self,**kwargs):
         try:
             p = kwargs["parameters"]
         except:
@@ -195,20 +194,32 @@ class Data(object):
             mask = np.append(mask, [[50000, 0]], axis = 0)
             #create decision function basedon interpolation of Mask
             mask_function = interpolate.interp1d(mask[:,0],mask[:,1])
-            mask_array = np.zeros(np.array(self.xs).shape)
-            mask_bool = np.ones(np.array(self.xs).shape, dtype = bool)
+            #mask_array = np.zeros(np.array(self.xs).shape)
+            mask_bool = np.zeroes(np.array(self.xs).shape, dtype = bool)
             #loop over all entries
             for o, xs_order in enumerate(self.xs):
                 for e, xs_epoch in enumerate(xs_order):
                     for l, xs_lambda in enumerate(xs_epoch):
                         if mask_function(np.exp(xs_lambda)) == 1:
-                            mask_array[o,e,l] = 1
-                            mask_bool[o,e,l] = False
-        #TODO
-        #[not bool for bool in mask_bool] to invert selection
-        if p.mask tellurics == "mask" or p.mask tellurics == "inverted_mask":
-            if p.mask tellurics == "inverted_mask":
-                [not bool for bool in mask_bool] to invert selection
+                            #mask_array[o,e,l] = 1
+                            mask_bool[o,e,l] = True #True means point will be masked out in mask telluric_mask_pixels #NOTE conntinuum norm function  uses inverted logic
+        return mask_bool
+            
+            
+    #NOTE not one of wobbles standart functions
+    def mask_telluric_mask_pixels(self, **kwargs):
+        """Set ivars to zero for masked regions that are bad."""
+        #NOTE needs to be applied after continuum norm if use for inverted selection (Masked regions only)
+        
+        try:
+            p = kwargs["parameters"]
+        except:
+            raise Exception("must pass parameters object to data object via kwargs in .Data for telluric mask")
+
+        if p.mask_tellurics == "mask" or p.mask_tellurics == "inverted_mask":
+            mask_bool = self.gen_telluric_mask(**kwargs)
+            if p.mask_tellurics == "inverted_mask":
+                mask_bool = [not bool for bool in mask_bool] #to invert selection
             for r in range(self.R):
                 for n in range(self.N):
                     #Could probablly be done without the loops
