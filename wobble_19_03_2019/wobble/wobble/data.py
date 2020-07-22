@@ -173,6 +173,55 @@ class Data(object):
         for r in range(self.R):
             self.trim_bad_edges(r, min_snr=min_snr) # HACK
             
+    #NOTE not one of wobbles standart functions
+    def mask_telluric_mask_pixels(self, **kwargs):
+        """Set ivars to zero for masked regions that are bad."""
+        #NOTE needs to be applied after continuum noorm if use for inverted selection (Masked regions only)
+        
+        try:
+            p = kwargs["parameters"]
+        except:
+            raise Exception("must pass parameters object to data object via kwargs in .Data for telluric mask")
+        
+        #TODO make this not Hard Coded
+        file_dir = os.path.dirname(__file__)
+        telluric_mask_file = file_dir + "/"+"../../../wobble_aux/carmenes_aux_files/" + "telluric_mask_carm_short.dat"
+        #mask tellurics
+        if telluric_mask_file is not None:
+            telluric_mask = np.genfromtxt(telluric_mask_file)
+            #extend mask (with value 0) to include earliest CARMENES orders
+            mask = telluric_mask
+            mask = np.insert(mask, 0, [0.0,0],axis = 0)
+            mask = np.append(mask, [[50000, 0]], axis = 0)
+            #create decision function basedon interpolation of Mask
+            mask_function = interpolate.interp1d(mask[:,0],mask[:,1])
+            mask_array = np.zeros(np.array(self.xs).shape)
+            mask_bool = np.ones(np.array(self.xs).shape, dtype = bool)
+            #loop over all entries
+            for o, xs_order in enumerate(self.xs):
+                for e, xs_epoch in enumerate(xs_order):
+                    for l, xs_lambda in enumerate(xs_epoch):
+                        if mask_function(np.exp(xs_lambda)) == 1:
+                            mask_array[o,e,l] = 1
+                            mask_bool[o,e,l] = False
+        #TODO
+        #[not bool for bool in mask_bool] to invert selection
+        if p.mask tellurics == "mask" or p.mask tellurics == "inverted_mask":
+            if p.mask tellurics == "inverted_mask":
+                [not bool for bool in mask_bool] to invert selection
+            for r in range(self.R):
+                for n in range(self.N):
+                    #Could probablly be done without the loops
+                    self.flux_ivars[r][n][mask_bool[r,n]] = 0.
+                    self.ivars[r][n][mask_bool[r,n]] = 0.
+                    #TODO Check where 0 Ivars are dropped. I think they are just not weighted?
+        else:
+            if p.mask_tellurics != "no_mask":
+                raise Exception("invalid p.mask_tellurics")
+            
+        
+        
+
     def trim_bad_edges(self, r, window_width = 128, min_snr = 5.):
         """
         Find edge regions that contain no information and trim them.
@@ -232,11 +281,10 @@ class Data(object):
             os.makedirs(plot_dir_continuum, exist_ok = True)
         order = p.continuum_order
         nsigma = p.continuum_nsigma
+        
         #TODO make this not Hard Coded
         file_dir = os.path.dirname(__file__)
         telluric_mask_file = file_dir + "/"+"../../../wobble_aux/carmenes_aux_files/" + "telluric_mask_carm_short.dat"
-        
-        
         #mask tellurics
         if telluric_mask_file is not None:
             telluric_mask = np.genfromtxt(telluric_mask_file)
@@ -254,7 +302,7 @@ class Data(object):
                     for l, xs_lambda in enumerate(xs_epoch):
                         if mask_function(np.exp(xs_lambda)) == 1:
                             mask_array[o,e,l] = 1
-                            #mask_bool[o,e,l] = False
+                            mask_bool[o,e,l] = False
             #mask data (all parts with this shape) (xs, ys, ((fluxes, flux_ivars,)) ivars)
             xs_masked = np.ma.masked_array(self.xs, mask = mask_array)
             ys_masked = np.ma.masked_array(self.ys, mask = mask_array)
@@ -264,6 +312,9 @@ class Data(object):
             #ys_deleted = np.delete(self.ys, mask_bool, axis = 0)
             #ivars_deleted = np.delete(self.ivars, mask_bool, axis = 0)
             #print(xs_deleted, xs_deleted.shape)
+            
+            
+            #NOTE Move masking to loop below. I suspect the mask breaks fit_continuum
             
         """Continuum-normalize all spectra using a polynomial fit. Takes kwargs of utils.fit_continuum"""
         #self.drop_orders = []
@@ -275,9 +326,15 @@ class Data(object):
                                 ##, **kwargs
                                 #)
                 try:
-                    fit = fit_continuum(xs_masked[r][n].compressed(), ys_masked[r][n].compressed(), ivars_masked[r][n].compressed(), order = order, nsigma = nsigma
+                    #fit = fit_continuum(xs_masked[r][n].compressed(), ys_masked[r][n].compressed(), ivars_masked[r][n].compressed(), order = order, nsigma = nsigma
                                         #, **kwargs
-                                        ) #pass compressed arrays, to get rid of masked sections
+                                        #) #pass compressed arrays, to get rid of masked sections
+                    fit = fit_continuum(self.xs[r][n][mask_bool[r,n]], self.ys[r][n][mask_bool[r,n]], self.ivars[r][n][mask_bool[r,n]]
+                    ,order = order
+                    ,nsigma = nsigma
+                    #, **kwargs
+                    )
+                    
                     #fit = fit_continuum(xs_masked[r][n], ys_masked[r][n], ivars_masked[r][n], order = order
                                         ##, **kwargs
                                         #)

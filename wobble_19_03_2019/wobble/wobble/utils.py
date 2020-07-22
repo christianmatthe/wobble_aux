@@ -79,7 +79,6 @@ def fit_continuum(x, y, ivars, order=6,
                 m = m_new
                 break
             m = m_new
-            return mu
         except:
             print("Unexpected error:", sys.exc_info()[0])
             print(A, y)
@@ -89,8 +88,9 @@ def fit_continuum(x, y, ivars, order=6,
             print(A[m].shape, y[m].shape)
             raise Exception ("Error during continnuum normalization: ", sys.exc_info()[0],
                              "Dropping this order")
-        ###
-
+    return mu
+    ###
+    
 def bin_data(xs, ys, ivars, xps):
     """
     Bin data onto a uniform grid using medians.

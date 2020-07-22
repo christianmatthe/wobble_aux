@@ -197,6 +197,7 @@ class Parameters:
         whether or not to output plots of the continua during data import (Note: a LOT of plots (orders*epochs))
     drop_orders : `list of ints` (default [])
         list used by continuum normalize to mark orders that could  not be continuum normalized
+    mask_tellurics : `str` (default `"no_mask"`)
         
     
         
@@ -221,6 +222,7 @@ class Parameters:
                  continuum_order = 1,
                  continuum_nsigma = 'default',
                  plot_continuum  = False
+                 mask_tellurics = "no_mask"
                  ):
         self.starname = starname
         self.K_star = K_star
@@ -239,7 +241,7 @@ class Parameters:
         self.plots = plots
         self.continuum_order = continuum_order
         #Redo Default continuum sigmas [0.3,3.0] for vis (wobble original), [0.5,1] for NIR
-        #HACK Workaround to determine VIS or NIR from data suffix, could be done more cleanly. Ideally include "ode" parameter with options vis and nir
+        #HACK Workaround to determine VIS or NIR from data suffix, could be done more cleanly. Ideally include "mode" parameter with options vis and nir, that would also change e.g. start and end order
         if continuum_nsigma == 'default':
             if '_vis_' in data_suffix:
                 self.continuum_nsigma = [0.3,3.0]
@@ -252,6 +254,8 @@ class Parameters:
             
         self.plot_continuum  = plot_continuum
         self.drop_orders = []
+        
+        self.mask_tellurics = mask_tellurics
         '''
         self.dictionary = {
             "starname" : starname,
