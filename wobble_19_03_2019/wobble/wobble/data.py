@@ -195,7 +195,7 @@ class Data(object):
             #create decision function basedon interpolation of Mask
             mask_function = interpolate.interp1d(mask[:,0],mask[:,1])
             #mask_array = np.zeros(np.array(self.xs).shape)
-            mask_bool = np.zeroes(np.array(self.xs).shape, dtype = bool)
+            mask_bool = np.zeros(np.array(self.xs).shape, dtype = bool)
             #loop over all entries
             for o, xs_order in enumerate(self.xs):
                 for e, xs_epoch in enumerate(xs_order):
@@ -219,7 +219,16 @@ class Data(object):
         if p.mask_tellurics == "mask" or p.mask_tellurics == "inverted_mask":
             mask_bool = self.gen_telluric_mask(**kwargs)
             if p.mask_tellurics == "inverted_mask":
-                mask_bool = [not bool for bool in mask_bool] #to invert selection
+                for o, xs_order in enumerate(self.xs):
+                    for e, xs_epoch in enumerate(xs_order):
+                        for l, xs_lambda in enumerate(xs_epoch):
+                            mask_bool[o,e,l] = not mask_bool[o,e,l] #Invert every entry individually
+                #same with list comprehension
+                #mask_bool = [
+                    #[
+                    #[not bool for bool in mask_bool[o,e]]
+                             #for e in range(len(mask_bool[o]))]
+                                #for o in range(len(mask_bool))] #to invert selection
             for r in range(self.R):
                 for n in range(self.N):
                     #Could probablly be done without the loops

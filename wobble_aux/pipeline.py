@@ -277,13 +277,46 @@ if __name__ == "__main__":
         #rw.run_wobble(parameters)
     ###END 
     
-    #BEGIN Prototype Niter_dict
+    ##BEGIN Prototype Niter_dict
     #pipeline_run_name = "pipeline_niter_dict/"
-    pipeline_run_name = "pipeline_continuum_test_[0.3,1]/"
+    ##pipeline_run_name = "pipeline_continuum_test_[0.3,1]/"
+    #results_dir = results_dir_base + pipeline_run_name
+    #os.makedirs(results_dir, exist_ok = True)
+    #name_dict = name_dict_master
+    ##name_dict = {"Teegarden" : name_dict_master["Teegarden"]}
+    ##name_dict = {"GJ436" : name_dict_master["GJ436"]}
+    #for star in tqdm(name_dict):
+        #try:
+            #niter = niter_dict[star]
+        #except:
+            #print(star, " not in  niter_dict, using niter = 160 as default")
+            #niter = 160
+        #parameters = rw.Parameters(starname = star,
+                                #results_dir = results_dir,
+                                
+                                #min_snr = 60,
+                                
+                            #data_suffix = "_vis_drift+nzp",
+                            #start = 11, #CHNGE TIS BACK TO 11
+                            #end = 53,  #CHNGE TIS BACK TO 53
+                            #chunk_size = 5,
+                            #niter = niter,
+                            #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            #output_suffix = "n_{}".format(niter),
+                            #continuum_order = 1,  # NOTE
+                            ##continuum_nsigma = [0.3,1],# NOTE
+                            #plot_continuum = True)
+        #rw.run_wobble(parameters)
+    ##END 
+    
+    #BEGIN Continuum tests
+    continuum_order = 0
+    pipeline_run_name = "pipeline_continuum_order_0"
     results_dir = results_dir_base + pipeline_run_name
     os.makedirs(results_dir, exist_ok = True)
     name_dict = name_dict_master
-    name_dict = {"Teegarden" : name_dict_master["Teegarden"]}
+    #name_dict = {"Teegarden" : name_dict_master["Teegarden"]}
     #name_dict = {"GJ436" : name_dict_master["GJ436"]}
     for star in tqdm(name_dict):
         try:
@@ -297,18 +330,18 @@ if __name__ == "__main__":
                                 min_snr = 60,
                                 
                             data_suffix = "_vis_drift+nzp",
-                            start = 43, #CHNGE TIS BACK TO 11
-                            end = 50,  #CHNGE TIS BACK TO 53
+                            start = 11, #CHNGE TIS BACK TO 11
+                            end = 53,  #CHNGE TIS BACK TO 53
                             chunk_size = 5,
                             niter = niter,
                             reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
                             reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
                             output_suffix = "n_{}".format(niter),
-                            #continuum_order = 1,  # NOTE
-                            continuum_nsigma = [0.3,1],# NOTE
+                            continuum_order = continuum_order,  # NOTE
+                            #continuum_nsigma = [0.3,3],# NOTE
                             plot_continuum = True)
         rw.run_wobble(parameters)
-    ##END 
+    #END 
     
     
         
@@ -353,7 +386,7 @@ if __name__ == "__main__":
                             #output_suffix = "no_drift_corr",
                             #plot_continuum = False)
         #rw.run_wobble(parameters)
-    #END No drift correction tests    
+    ##END No drift correction tests    
     
     
 #use eval results after this
