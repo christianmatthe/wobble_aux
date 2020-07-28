@@ -116,7 +116,8 @@ def read_data_from_fits(filelist, arm='vis', starname = None, serval_dir = None,
                                                            )[0]
         #print("after bary")
         
-        if date >=2457754.5:#1 JAN 2017
+        #if date >=2457754.5:#1 JAN 2017 for cutting problematic nir measurements
+        if date >=2000000.0: #HACK to get GJ436 NIR plot
             dates[n] = date
         else:
             if arm == "vis":
