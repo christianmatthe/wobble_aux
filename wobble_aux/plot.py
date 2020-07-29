@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import run_wobble as rw
+import process_results as pr
 
 def op(order_index, arm = "vis"):
     #calculates physical CARMENES interference order ("order physical -> op" from order index
@@ -154,7 +155,6 @@ def plot_wobble_order_zoom(orders, epochs, results_file, plot_dir, show_mask=Fal
             plt.savefig(plot_dir + str(p.starname) + '_zoom_op{0}_o{1}_e{2}{3}.pdf'.format(op(o), o, e, mask_str))
             plt.savefig(plot_dir + str(p.starname) + '_zoom_op{0}_o{1}_e{2}{3}.png'.format(op(o), o, e, mask_str))
             plt.close(fig)
-        
     
 if __name__ == "__main__":
     #file_dir = os.path.dirname(__file__)

@@ -130,14 +130,15 @@ def plot_time_series(kep_fit, output_file, table = True, width = 10, precision =
     mpl.rcParams['ytick.minor.size'] = 5
     mpl.rcParams['ytick.minor.width'] = 2
     
-    # HACK usetex fails (probably because no latex is installed) mpl.rc('text',usetex=True)
-    mpl.rc('text',usetex=False)
+    mpl.rc('text',usetex=True)
+    #font = {'family' : 'normal','weight' : 'bold','size'   : 12,'serif':['Helvetica']}
     font = {'family' : 'normal','weight' : 'bold','size'   : 12,'serif':['Helvetica']}
     mpl.rc('font', **font)
+    
     ##### time series format ######
     f = plt.figure(0, figsize=(8,6.5))
     plt.subplots_adjust(hspace=0.005)
-    format_im = 'pdf' #'pdf' or png
+    format_im = 'png' #'pdf' or png
     dpi = 300
 
     gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1]) 
@@ -213,7 +214,6 @@ def plot_time_series(kep_fit, output_file, table = True, width = 10, precision =
     
     plt.setp( ax2.get_yticklabels(), fontsize=15,weight='bold')
     plt.setp( ax2.get_xticklabels(), fontsize=15,weight='bold')
-    
     
     # Fine-tune figure; make subplots close to each other and hide x ticks for
     # all but bottom plot.
@@ -692,7 +692,7 @@ simbad_dict = {
 
 n_planet_dict = {
     
-    "GJ436"     : 2, #should be 1 ,2 just foor test
+    "GJ436"     : 1, #should be 1 ,2 just foor test
     "GJ1148"    : 2,
     "GJ3473"    : 2, #default
     "YZ Cet"    : 2, #default
@@ -779,7 +779,7 @@ if __name__ == "__main__":
     ##END
     
     #BEGIN
-    run_name = "drop_points_test"
+    run_name = "drop_points_test_TeX"
     results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/pipeline_test_0/"
     file_list = ["results_GJ436_Kstar0_Kt3_baseline_0.hdf5",
         "results_GJ1148_Kstar0_Kt3_baseline_0.hdf5",
