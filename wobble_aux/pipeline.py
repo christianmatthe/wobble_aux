@@ -397,7 +397,7 @@ if __name__ == "__main__":
         #rw.run_wobble(parameters)
     ##END No drift correction tests  
     
-    #####################################
+    #######################################################################################################################################################################################
     #Reruns for powerpoint pres recreation section
     
     ##BEGIN GJ436 NIR with new and old continnuum
@@ -688,7 +688,8 @@ if __name__ == "__main__":
                             output_suffix = "n_{}".format(niter),
                             plot_continuum = True)
         rw.run_wobble(parameters)
-    
+        #Reruns for powerpoint pres recreation section
+    #######################################################################################################################################################################################
     #####################################
     
     

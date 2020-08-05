@@ -135,6 +135,9 @@ def plot_time_series(kep_fit, output_file, table = True, width = 10, precision =
     font = {'family' : 'normal','weight' : 'bold','size'   : 12,'serif':['Helvetica']}
     mpl.rc('font', **font)
     
+    #print(mpl.rcParams.keys())
+    mpl.rcParams['lines.markeredgecolor']='k'#black edges on symbols
+    
     ##### time series format ######
     f = plt.figure(0, figsize=(8,6.5))
     plt.subplots_adjust(hspace=0.005)
@@ -152,8 +155,9 @@ def plot_time_series(kep_fit, output_file, table = True, width = 10, precision =
     symbol = ['o', 'D', 'o', 'o']
     markersize = [5, 5, 6, 6] 
     alpha = [1, 1, 1, 1]
-
-    model_color = 'k'
+    
+    #model_color = 'k'
+    model_color = 'C7'
     model_lw = '1.0'
     jd_offset = 2450000 # for cleaner x-axis labels
     #### Get the time series (these below are self explanatory) ########  
@@ -162,9 +166,11 @@ def plot_time_series(kep_fit, output_file, table = True, width = 10, precision =
     rv_err    = kep_fit.fit_results.rv_model.rv_err
     o_c       = kep_fit.fit_results.rv_model.o_c
     
-    
+    #print("jd: ",jd)
+    print("type(jd): ", type(jd))
     
     data_set  = kep_fit.filelist.idset
+    #print("data_set: ",data_set)
 
     # we can add the jitter
     add_jitter = True
@@ -193,10 +199,12 @@ def plot_time_series(kep_fit, output_file, table = True, width = 10, precision =
     ax2.plot(zero_point_T,zero_point,'-', linewidth=model_lw, color=model_color)      
 
     
-
+    #print("len(data_set): ",len(data_set)) #there seems to be an issue when just 
+                                            #one dataset is included
     for i in range(len(data_set)):
 
-            ax1.errorbar(jd[i],rvs[i], yerr=rv_err[i], alpha=alpha[int(data_set[i])], fmt=symbol[int(data_set[i])], linestyle='None', markersize = markersize[int(data_set[i])], color=color[int(data_set[i])], capsize = 0, elinewidth=1,mew=0.1)
+            ax1.errorbar(jd[i],rvs[i], yerr=rv_err[i], alpha=alpha[int(data_set[i])], fmt=symbol[int(data_set[i])], linestyle='None', markersize = markersize[int(data_set[i])], color=color[int(data_set[i])], capsize = 0, elinewidth=1,mew=0.1
+                         )
             ax2.errorbar(jd[i],o_c[i], yerr=rv_err[i], alpha=alpha[int(data_set[i])], fmt=symbol[int(data_set[i])], linestyle='None', markersize = markersize[int(data_set[i])],color=color[int(data_set[i])], capsize = 0, elinewidth=1,mew=0.1)
 
 
@@ -205,8 +213,9 @@ def plot_time_series(kep_fit, output_file, table = True, width = 10, precision =
     ax1.set_ylabel(r'RV [m/s]',fontsize=16, rotation = 'vertical') 
     ax1.set_xlim(min(jd)-offset_pre,max(jd)+offset_post)
     
+    #ax1.legend()
 
-    ax2.set_xlabel(r'JD [day] - {}'.format(jd_offset),fontsize=16)
+    ax2.set_xlabel(r'JD [d] - {}'.format(jd_offset),fontsize=16)
     ax2.set_ylabel(r'o$-$c  [m/s]',fontsize=16, rotation = 'vertical') 
     ax2.set_xlim(min(jd)-offset_pre,max(jd)+offset_post)
 
@@ -236,7 +245,7 @@ def plot_time_series(kep_fit, output_file, table = True, width = 10, precision =
         
         #columns = ['Planet b', 'Planet c']
         columns = ['Planet {}'.format(alpha_num_dict[i]) for i in range(1,npl+1)]
-        rows = ['K [m/s]', 'P [day]', 'r.m.s. [m/s]']
+        rows = ['K [m/s]', 'P [d]', 'r.m.s. [m/s]']
         
         cell_text_dict = {}
         for i in range(npl):
@@ -270,43 +279,6 @@ def plot_time_series(kep_fit, output_file, table = True, width = 10, precision =
         #[Pb, Pc],
         #[rms, '']
                     #]
-        
-        #THIS IS A FILTHY HACK
-        #try:
-            #parameter_ID =7*0
-            #Kb = r'{0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f}'.format(kep_fit.params.planet_params[parameter_ID], max(np.abs(kep_fit.param_errors.planet_params_errors[parameter_ID])), width = width, precision = precision)
-        #except:
-            #Kb = 'NA'
-        #try:
-            #parameter_ID =7*1
-            #Kc = r'{0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f}'.format(kep_fit.params.planet_params[parameter_ID], max(np.abs(kep_fit.param_errors.planet_params_errors[parameter_ID])), width = width, precision = precision)
-        #except:
-            #Kc = 'NA'
-            
-        #try:
-            #parameter_ID =7*0 +1
-            #Pb = r'{0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f}'.format(kep_fit.params.planet_params[parameter_ID], max(np.abs(kep_fit.param_errors.planet_params_errors[parameter_ID])), width = width, precision = precision)
-        #except:
-            #Pb = 'NA'
-        #try:
-            #parameter_ID =7*1 +1
-            #Pc = r'{0:{width}.{precision}f} $\pm$ {1:{width}.{precision}f}'.format(kep_fit.params.planet_params[parameter_ID], max(np.abs(kep_fit.param_errors.planet_params_errors[parameter_ID])), width = width, precision = precision)
-        #except:
-            #Pc = 'NA'
-            
-        #try:
-            #rms = '{0:{width}.{precision}f}'.format(float(kep_fit.fit_results.rms), width = width, precision = precision)
-        #except:
-            #rms = 'NA'
-            
-            
-            
-            
-        #cell_text = [
-            #[Kb, Kc],
-            #[Pb, Pc],
-            #[rms, '']
-                     #]
         
         ax1.table(cellText=cell_text,
                       rowLabels=rows,
@@ -641,11 +613,221 @@ def eval_complete(run_name, file_list, name_dict, simbad_dict, results_dir, n_pl
     rms_file = output_dir + "/rms.yaml"
     with open(rms_file, 'w') as fp:
         yaml.dump(rms_dict, fp)
+          
+def plot_rv_comparison(kep_fit_list, output_file,
+                       legend_labels = None,
+                       phased = False,
+                       format_im = 'png', #'pdf' or png
+                       ip = 0, #declare index of primary data set
+                       table = True, width = 10, precision = 2
+                       ):
+    if legend_labels == None:
+        legend_labels = ['dataset {0}'.format(i) for i in range(len(kep_fit_list))]
+        
+# Edit of plot_time_series to include multiple fitted data sets
+ ###### For nice plotting ##############
+
+    mpl.rcParams['axes.linewidth'] = 2.0 #set the value globally
+    mpl.rcParams['xtick.major.pad']='8'
+    mpl.rcParams['ytick.major.pad']='2'
+
+    # set tick width
+    mpl.rcParams['xtick.major.size'] = 8
+    mpl.rcParams['xtick.major.width'] = 2
+    mpl.rcParams['xtick.minor.size'] = 5
+    mpl.rcParams['xtick.minor.width'] = 2
+
+    mpl.rcParams['ytick.major.size'] = 8
+    mpl.rcParams['ytick.major.width'] = 2
+    mpl.rcParams['ytick.minor.size'] = 5
+    mpl.rcParams['ytick.minor.width'] = 2
+    
+    mpl.rc('text',usetex=True)
+    #font = {'family' : 'normal','weight' : 'bold','size'   : 12,'serif':['Helvetica']}
+    font = {'family' : 'normal','weight' : 'bold','size'   : 12,'serif':['Helvetica']}
+    mpl.rc('font', **font)
+    
+    #print(mpl.rcParams.keys())
+    mpl.rcParams['lines.markeredgecolor']='k'#black edges on symbols
+    
+    ##### time series format ######
+    f = plt.figure(0, figsize=(8,6.5))
+    plt.subplots_adjust(hspace=0.005)
+    format_im = format_im #'pdf' or png
+    dpi = 300
+
+    gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1]) 
+    #gs.update(  wspace=0.05)
+
+    ax1 = plt.subplot(gs[0])
+    ax2 = plt.subplot(gs[1])
+
+    
+    color = ['C0', 'C1', 'C2', 'C3']
+    symbol = ['o', 'D', 'v', 's']
+    markersize = [3, 3, 3, 3] 
+    alpha = [1, 1, 1, 1]
+    
+    #model_color = 'k'
+    model_color = 'C7'
+    model_lw = '1.0'
+###########################
+    if phased == False:
+    #Data reading
+        jd_offset = 2450000 # for cleaner x-axis labels
+        #### Get the time series (these below are self explanatory) ########  
+        jd = np.array([kep_fit.fit_results.rv_model.jd - jd_offset 
+                    for i,kep_fit in enumerate(kep_fit_list)])
+        rvs = np.array([kep_fit.fit_results.rv_model.rvs 
+                        for i,kep_fit in enumerate(kep_fit_list)])
+        rv_err = np.array([kep_fit.fit_results.rv_model.rv_err 
+                        for i,kep_fit in enumerate(kep_fit_list)])
+        o_c = np.array([kep_fit.fit_results.rv_model.o_c 
+                        for i,kep_fit in enumerate(kep_fit_list)])
         
         
+        #print(jd)
+        #data_set  = kep_fit.filelist.idset
+
+        # we can add the jitter
+        add_jitter = True
+        if add_jitter == True:
+            #if len(kep_fit_list) == 1:
+                ##Fallback if only one kep_fit was supplied #TODO is this required?
+                #kep_fit = kep_fit_list[0]
+                #data_set  = kep_fit.filelist.idset
+                #rv_err[0] = np.array([np.sqrt(rv_err[0][i]**2 + kep_fit.params.jitters[ii]**2)  for i,ii in enumerate(data_set)])
+            #else:
+            for j in range(len(kep_fit_list)):
+                kep_fit = kep_fit_list[j]
+                data_set  = kep_fit.filelist.idset
+                rv_err[j] = np.array([np.sqrt(rv_err[j][i]**2 + kep_fit.params.jitters[ii]**2)  for i,ii in enumerate(data_set)])
+                
+
+
+
+        # Kep model time series #
+        ip = 0 #primary fit index #TODO make input
+        kep_fit_primary = kep_fit_list[ip]
+        kep_model_x = kep_fit_primary.fit_results.model_jd - jd_offset
+
+        kep_model_y = kep_fit_primary.fit_results.model
+
         
 
-''' THis Dictionary does not always follow the naming connventions I used for "starname"
+        ###################################################################
+        
+        #TODO make scaling, make fit plot run to edges?
+        offset_pre  = 100
+        offset_post = 100
+
+        zero_point_T = range((int(min(jd[ip]))-offset_pre),(int(max(jd[ip]))+offset_post),10)
+        zero_point   = np.zeros(len(zero_point_T))
+
+
+        ax1.plot(kep_model_x, kep_model_y,       '-', linewidth=model_lw, color=model_color, label = "{0} fit".format(legend_labels[ip]))
+        ax2.plot(zero_point_T,zero_point,'-', linewidth=model_lw, color=model_color)      
+
+        
+        #print("len(data_set): ",len(data_set)) #there seems to be an issue when just 
+                                                #one dataset is included
+        for i in range(len(kep_fit_list)):
+
+                ax1.errorbar(jd[i],rvs[i], yerr=rv_err[i], alpha=alpha[i], fmt=symbol[i], linestyle='None', markersize = markersize[i], color=color[i], capsize = 0, elinewidth=1,mew=0.1,
+                            label = legend_labels[i] + ', rms = ' + '{0:{width}.{precision}f}'.format(float(kep_fit_list[i].fit_results.rms), width = width, precision = precision)
+                            )
+                ax2.errorbar(jd[i],o_c[i], yerr=rv_err[i], alpha=alpha[i], fmt=symbol[i], linestyle='None', markersize = markersize[i],color=color[i], capsize = 0, elinewidth=1,mew=0.1)
+                
+        ax1.set_ylabel(r'RV [m/s]',fontsize=16, rotation = 'vertical') 
+        ax1.set_xlim(min(jd[ip])-offset_pre,max(jd[ip])+offset_post)
+        
+        ax1.legend(loc = 'upper left')
+        #add padding for legend
+        ymin, ymax = ax1.get_ylim()
+        ax1.set_ylim(ymin, ymax + (ymax-ymin)*0.15)#TODO make this scale with legend size
+
+        ax2.set_xlabel(r'JD [d] - {}'.format(jd_offset),fontsize=16)
+        ax2.set_ylabel(r'o$-$c  [m/s]',fontsize=16, rotation = 'vertical') 
+        ax2.set_xlim(min(jd[ip])-offset_pre,max(jd[ip])+offset_post)
+
+        ax2.locator_params(axis="x", nbins=9)
+        
+        plt.setp( ax2.get_yticklabels(), fontsize=15,weight='bold')
+        plt.setp( ax2.get_xticklabels(), fontsize=15,weight='bold')
+        
+        # Fine-tune figure; make subplots close to each other and hide x ticks for
+        # all but bottom plot.
+            
+        
+        plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
+        
+        ##TODO Input Table if desired
+        plt.grid(True)
+        plt.savefig(output_file + '.{}'.format(format_im), format=format_im,dpi=dpi, bbox_inches='tight' )
+        ax1.cla() 
+        ax2.cla()
+        
+    if phased == True:
+        for j in range(kep_fit_list[ip].npl):
+
+            f = plt.figure(1, figsize=(9,6))
+        
+            ax1 = plt.subplot(111)
+            
+            for i in range(len(kep_fit_list)):
+                planet = j+1
+                kep_fit = kep_fit_list[i]
+                data, model = rv.phase_RV_planet_signal(kep_fit,planet)
+
+                jd = data[0]
+                rvs = data[1]
+                rv_err = data[2]
+                data_set = data[3]
+                
+                if i == ip:
+                    ax1.plot(model[0],model[1], linestyle =  '-', linewidth=model_lw, color=model_color, label = "{0} fit".format(legend_labels[ip]))
+
+                # we can add the jitter
+                add_jitter = True
+                if add_jitter == True:
+                    rv_err = np.array([np.sqrt(rv_err[k]**2 + kep_fit.params.jitters[kk]**2)  for k,kk in enumerate(data_set)])
+
+                
+                ax1.errorbar(jd,rvs, yerr=rv_err, alpha=alpha[i], fmt=symbol[i], linestyle='None', markersize = markersize[i], color=color[i], capsize = 0, elinewidth=1,mew=0.1,
+                label = legend_labels[i] + ', rms = ' + '{0:{width}.{precision}f}'.format(float(kep_fit_list[i].fit_results.rms), width = width, precision = precision)
+                                )
+                
+            ax1.legend(loc = 'upper left')
+            #add padding for legend
+            ymin, ymax = ax1.get_ylim()
+            ax1.set_ylim(ymin, ymax + (ymax-ymin)*0.15)#TODO make this scale with legend size
+            
+            ax1.set_xlabel(r'phase [d]',fontsize=16)
+            ax1.set_ylabel(r'RV [m/s]',fontsize=16, rotation = 'vertical') 
+
+            plt.grid(True)
+            plt.savefig(output_file + '_planet_%s.%s'%(j+1,format_im), format=format_im,dpi=dpi, bbox_inches='tight' )
+            ax1.cla() 
+
+
+def output_fit_parameters(kep_fit):
+    #orbital_parameters = [K, P, e, omega, M0] NOTE T0 removed: requires change to function in compare_ws
+    #mult [[planet_b],[planet_c],...]
+    #also output rms for comparison
+    #T_epoch (T_0) = obj.epoch
+    obj = kep_fit
+    orbital_parameters = np.zeros((obj.npl, 5))
+    
+    T_epoch = obj.epoch
+    
+    if obj.type_fit["RV"] == True:
+        for i in range(obj.npl):
+            orbital_parameters[i] = [obj.params.planet_params[7*i + j] for j in range(5)]
+            
+    return [T_epoch, orbital_parameters]
+    
+
+''' THis Dictionary does not always follow the naming conventions I used for "starname"
 #laptop test example:
 names = pd.read_csv(os.path.dirname(os.path.abspath(__file__)) + '/carmenes_aux_files/name_conversion_list.csv')
 name_dict_inverse = dict(zip(names['#Karmn'], names['Name'])) # yields Carm ID for catalogue name
@@ -783,10 +965,10 @@ if __name__ == "__main__":
     results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/pipeline_test_0/"
     file_list = ["results_GJ436_Kstar0_Kt3_baseline_0.hdf5",
         "results_GJ1148_Kstar0_Kt3_baseline_0.hdf5",
-        "results_GJ3473_Kstar0_Kt3_baseline_0.hdf5",
-        "results_YZ Cet_Kstar0_Kt3_baseline_0.hdf5",
-        "results_GJ15A_Kstar0_Kt3_baseline_0.hdf5",
-        "results_GJ176_Kstar0_Kt3_baseline_0.hdf5", "results_GJ536_Kstar0_Kt3_baseline_0.hdf5", "results_GJ3512_Kstar0_Kt3_baseline_0.hdf5", "results_Wolf294_Kstar0_Kt3_baseline_0.hdf5", "results_GJ876_Kstar0_Kt3_baseline_0.hdf5" , "results_Teegarden_Kstar0_Kt3_baseline_0.hdf5", "results_Barnard_Kstar0_Kt3_baseline_0.hdf5"
+        #"results_GJ3473_Kstar0_Kt3_baseline_0.hdf5",
+        #"results_YZ Cet_Kstar0_Kt3_baseline_0.hdf5",
+        #"results_GJ15A_Kstar0_Kt3_baseline_0.hdf5",
+        #"results_GJ176_Kstar0_Kt3_baseline_0.hdf5", "results_GJ536_Kstar0_Kt3_baseline_0.hdf5", "results_GJ3512_Kstar0_Kt3_baseline_0.hdf5", "results_Wolf294_Kstar0_Kt3_baseline_0.hdf5", "results_GJ876_Kstar0_Kt3_baseline_0.hdf5" , "results_Teegarden_Kstar0_Kt3_baseline_0.hdf5", "results_Barnard_Kstar0_Kt3_baseline_0.hdf5"
                  ]
 
     eval_serval_complete(run_name, file_list, name_dict, simbad_dict, results_dir, n_planet_dict = n_planet_dict, drop_pointsQ = True)
