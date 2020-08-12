@@ -319,38 +319,39 @@ if __name__ == "__main__":
         #rw.run_wobble(parameters)
     ##END 
     
-    ##BEGIN Continuum tests
-    #continuum_order = 0
-    #pipeline_run_name = "pipeline_continuum_order_0"
-    #results_dir = results_dir_base + pipeline_run_name
-    #os.makedirs(results_dir, exist_ok = True)
-    #name_dict = name_dict_master
-    ##name_dict = {"Teegarden" : name_dict_master["Teegarden"]}
-    ##name_dict = {"GJ436" : name_dict_master["GJ436"]}
-    #for star in tqdm(name_dict):
-        #try:
-            #niter = niter_dict[star]
-        #except:
-            #print(star, " not in  niter_dict, using niter = 160 as default")
-            #niter = 160
-        #parameters = rw.Parameters(starname = star,
-                                #results_dir = results_dir,
-                                
-                                #min_snr = 60,
-                                
-                            #data_suffix = "_vis_drift+nzp",
-                            #start = 11, #CHNGE TIS BACK TO 11
-                            #end = 53,  #CHNGE TIS BACK TO 53
-                            #chunk_size = 5,
-                            #niter = niter,
-                            #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
-                            #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
-                            #output_suffix = "n_{}".format(niter),
-                            #continuum_order = continuum_order,  # NOTE
-                            #continuum_nsigma = [0.3,3],# NOTE
-                            #plot_continuum = True)
-        #rw.run_wobble(parameters)
-    ##END 
+    #BEGIN Continuum tests
+    c_order_list = [0,1,2,3,4,5,6]
+    for continuum_order in c_order_list:
+        pipeline_run_name = "pipeline_continuum_order_{}".format(continuum_order)
+        results_dir = results_dir_base + pipeline_run_name
+        os.makedirs(results_dir, exist_ok = True)
+        name_dict = name_dict_master
+        #name_dict = {"Teegarden" : name_dict_master["Teegarden"]}
+        #name_dict = {"GJ436" : name_dict_master["GJ436"]}
+        for star in tqdm(name_dict):
+            try:
+                niter = niter_dict[star]
+            except:
+                print(star, " not in  niter_dict, using niter = 160 as default")
+                niter = 160
+            parameters = rw.Parameters(starname = star,
+                                    results_dir = results_dir,
+                                    
+                                    min_snr = 60,
+                                    
+                                data_suffix = "_vis_drift+nzp",
+                                start = 11, #CHNGE TIS BACK TO 11
+                                end = 53,  #CHNGE TIS BACK TO 53
+                                chunk_size = 5,
+                                niter = niter,
+                                reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                output_suffix = "",
+                                continuum_order = continuum_order,  # NOTE
+                                continuum_nsigma = [0.3,3],# NOTE
+                                plot_continuum = True)
+            rw.run_wobble(parameters)
+    #END 
     
     
         
@@ -619,76 +620,115 @@ if __name__ == "__main__":
             #rw.run_wobble(parameters)
 ##END
 #BEGIN Baseline+SNR: GJ436 without SNR and without drift
-#May not work the same due to now fixed implementation issues
-    snr_list = [5,15,30,45,60]
-    for snr in snr_list:
-        continuum_order = 1 # NOTE
-        continuum_nsigma = [0.3,3] # NOTE
-        pipeline_run_name = "pipeline_pp_reruns/Baseline+SNR"
-        results_dir = results_dir_base + pipeline_run_name
-        os.makedirs(results_dir, exist_ok = True)
-        #name_dict = name_dict_master
-        name_dict = {"GJ436" : name_dict_master["GJ436"],
-                    "GJ1148" : name_dict_master["GJ1148"]
-                    }
-        for star in tqdm(name_dict):
-            try:
-                niter = niter_dict[star]
-            except:
-                print(star, " not in  niter_dict, using niter = 160 as default")
-                niter = 160
-            parameters = rw.Parameters(starname = star,
-                                    results_dir = results_dir,
+##May not work the same due to now fixed implementation issues
+    #snr_list = [5,15,30,45,60]
+    #for snr in snr_list:
+        #continuum_order = 1 # NOTE
+        #continuum_nsigma = [0.3,3] # NOTE
+        #pipeline_run_name = "pipeline_pp_reruns/Baseline+SNR"
+        #results_dir = results_dir_base + pipeline_run_name
+        #os.makedirs(results_dir, exist_ok = True)
+        ##name_dict = name_dict_master
+        #name_dict = {"GJ436" : name_dict_master["GJ436"],
+                    #"GJ1148" : name_dict_master["GJ1148"]
+                    #}
+        #for star in tqdm(name_dict):
+            #try:
+                #niter = niter_dict[star]
+            #except:
+                #print(star, " not in  niter_dict, using niter = 160 as default")
+                #niter = 160
+            #parameters = rw.Parameters(starname = star,
+                                    #results_dir = results_dir,
                                     
-                                    min_snr = snr,
+                                    #min_snr = snr,
                                     
-                                data_suffix = "_vis",
-                                start = 11, 
-                                end = 53,  
-                                chunk_size = 5,
-                                niter = niter,
-                                reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
-                                reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
-                                continuum_order = continuum_order,  
-                                continuum_nsigma = continuum_nsigma,
-                                output_suffix = "min_snr_{}".format(snr),
-                                plot_continuum = True)
-            rw.run_wobble(parameters)
-#END Baseline+SNR: GJ436 without SNR and without drift
-#BEGIN GJ3512 as example for completely "bad" epoch
+                                #data_suffix = "_vis",
+                                #start = 11, 
+                                #end = 53,  
+                                #chunk_size = 5,
+                                #niter = niter,
+                                #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                #continuum_order = continuum_order,  
+                                #continuum_nsigma = continuum_nsigma,
+                                #output_suffix = "min_snr_{}".format(snr),
+                                #plot_continuum = True)
+            #rw.run_wobble(parameters)
+##END Baseline+SNR: GJ436 without SNR and without drift
+##BEGIN GJ3512 as example for completely "bad" epoch
 
-    continuum_order = 1 # NOTE
-    continuum_nsigma = [0.3,3] # NOTE
-    pipeline_run_name = "pipeline_pp_reruns/GJ3512"
-    results_dir = results_dir_base + pipeline_run_name
-    os.makedirs(results_dir, exist_ok = True)
-    #name_dict = name_dict_master
-    name_dict = {"GJ3512" : name_dict_master["GJ3512"]
-                }
-    for star in tqdm(name_dict):
-        try:
-            niter = niter_dict[star]
-        except:
-            print(star, " not in  niter_dict, using niter = 160 as default")
-            niter = 160
-        parameters = rw.Parameters(starname = star,
-                                results_dir = results_dir,
+    #continuum_order = 1 # NOTE
+    #continuum_nsigma = [0.3,3] # NOTE
+    #pipeline_run_name = "pipeline_pp_reruns/GJ3512"
+    #results_dir = results_dir_base + pipeline_run_name
+    #os.makedirs(results_dir, exist_ok = True)
+    ##name_dict = name_dict_master
+    #name_dict = {"GJ3512" : name_dict_master["GJ3512"]
+                #}
+    #for star in tqdm(name_dict):
+        #try:
+            #niter = niter_dict[star]
+        #except:
+            #print(star, " not in  niter_dict, using niter = 160 as default")
+            #niter = 160
+        #parameters = rw.Parameters(starname = star,
+                                #results_dir = results_dir,
                                 
-                                min_snr = 60,
+                                #min_snr = 60,
                                 
-                            data_suffix = "_vis_drift+nzp",
-                            start = 11, 
-                            end = 53,  
-                            chunk_size = 5,
-                            niter = niter,
-                            reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
-                            reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
-                            continuum_order = continuum_order,  
-                            continuum_nsigma = continuum_nsigma,
-                            output_suffix = "n_{}".format(niter),
-                            plot_continuum = True)
-        rw.run_wobble(parameters)
+                            #data_suffix = "_vis_drift+nzp",
+                            #start = 11, 
+                            #end = 53,  
+                            #chunk_size = 5,
+                            #niter = niter,
+                            #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                            #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                            #continuum_order = continuum_order,  
+                            #continuum_nsigma = continuum_nsigma,
+                            #output_suffix = "n_{}".format(niter),
+                            #plot_continuum = True)
+        #rw.run_wobble(parameters)
         #Reruns for powerpoint pres recreation section
+##END Baseline+SNR: GJ436 without SNR and without drift
+        
+##BEGIN TODO Baseline+SNR: GJ1148 o49 e31 continuum norm (order5) error 
+###May not work the same due to now fixed implementation issues
+    #snr_list = [5]
+    #for snr in snr_list:
+        #continuum_order = 5 # NOTE
+        #continuum_nsigma = [0.3,3] # NOTE
+        #pipeline_run_name = "pipeline_pp_reruns/Baseline+SNR"
+        #results_dir = results_dir_base + pipeline_run_name
+        #os.makedirs(results_dir, exist_ok = True)
+        ##name_dict = name_dict_master
+        #name_dict = {#"GJ436" : name_dict_master["GJ436"],
+                    #"GJ1148" : name_dict_master["GJ1148"]
+                    #}
+        #for star in tqdm(name_dict):
+            #try:
+                #niter = niter_dict[star]
+            #except:
+                #print(star, " not in  niter_dict, using niter = 160 as default")
+                #niter = 160
+            #parameters = rw.Parameters(starname = star,
+                                    #results_dir = results_dir,
+                                    
+                                    #min_snr = snr,
+                                    
+                                #data_suffix = "_vis",
+                                #start = 49, 
+                                #end = 50,  
+                                #chunk_size = 5,
+                                #niter = niter,
+                                #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                #continuum_order = continuum_order,  
+                                #continuum_nsigma = continuum_nsigma,
+                                #output_suffix = "cont_{}".format(continuum_order),
+                                #plot_continuum = True)
+            #rw.run_wobble(parameters)
+##END TODO Baseline+SNR: GJ1148 o49 e31 continuum norm (order5) error 
     #######################################################################################################################################################################################
     #####################################
     

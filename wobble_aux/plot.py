@@ -6,10 +6,18 @@ import matplotlib.pyplot as plt
 
 import run_wobble as rw
 import process_results as pr
+import cws_refactor as cws
 
 #import exostriker functions from  evaluate results
 import evaluate_results as er
 import matplotlib as mpl
+
+################
+name_dict = er.name_dict #connects starname to carmenes ID
+simbad_dict = er.simbad_dict #connects starname to simbad iidentifiers that work with barycorr
+n_planet_dict = er.n_planet_dict #dictionary of max number of planets to be fit
+###########
+
 
 def op(order_index, arm = "vis"):
     #calculates physical CARMENES interference order ("order physical -> op" from order index
@@ -41,6 +49,9 @@ def plot_wobble_order(orders, epochs, results_file, plot_dir, show_mask=False):
         r_r = np.where(np.array(results.orders) == o)[0][0]
         r_d = np.where(np.array(data.orders) == o)[0][0]
         for e_ind ,e in enumerate(epochs):
+            if e not in epochs_results:
+                print("epoch {} not in epochs_results. Skipping.".format(e))
+                continue #Skip epochs that may have been dropped
             #print(e)
             #print(np.array(epochs_results))
             ep = np.where(np.array(epochs_results) == e)[0][0]
@@ -167,6 +178,11 @@ def plot_wobble_order_zoom(orders, epochs, results_file, plot_dir, show_mask=Fal
             plt.close(fig)
     
 if __name__ == "__main__":
+    #NOTE #####################
+    output_dir_master = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/fin_plots/MT_git/figures/"
+    #NOTE #####################
+    
+    
     #file_dir = os.path.dirname(__file__)
     #telluric_mask_file = file_dir + "/"+"carmenes_aux_files/" + "telluric_mask_carm_short.dat"
     
@@ -218,111 +234,115 @@ if __name__ == "__main__":
     #epochs = [i for i in range(72)]
     
     #plot_wobble_order(orders, epochs, results_file, plot_dir, show_mask = False)
-    
-########################################################################################
-#Test of  importing eval functions
-    ##BEGIN
-    #run_name = "drop_points_test_TeX_plot"
-    #results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/pipeline_test_0/"
-    #file_list = ["results_GJ436_Kstar0_Kt3_baseline_0.hdf5",
-        #"results_GJ1148_Kstar0_Kt3_baseline_0.hdf5",
-        ##"results_GJ3473_Kstar0_Kt3_baseline_0.hdf5",
-        ##"results_YZ Cet_Kstar0_Kt3_baseline_0.hdf5",
-        ##"results_GJ15A_Kstar0_Kt3_baseline_0.hdf5",
-        ##"results_GJ176_Kstar0_Kt3_baseline_0.hdf5", "results_GJ536_Kstar0_Kt3_baseline_0.hdf5", "results_GJ3512_Kstar0_Kt3_baseline_0.hdf5", "results_Wolf294_Kstar0_Kt3_baseline_0.hdf5", "results_GJ876_Kstar0_Kt3_baseline_0.hdf5" , "results_Teegarden_Kstar0_Kt3_baseline_0.hdf5", "results_Barnard_Kstar0_Kt3_baseline_0.hdf5"
-                 #]
 
-    #er.eval_complete(run_name, file_list, er.name_dict, er.simbad_dict, results_dir, n_planet_dict = er.n_planet_dict, drop_pointsQ = True)
-    ##END
-    
-#Test of plot_rv_comparison: Basic impersonation of "INITIAL RV results" presentation plot
-    #BEGIN
-    run_name = "pres_rerun/baseline/"
+#BEGIN GJ1148 o49 e31 bad SNR/Continuum example
     results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline_2/pipeline_pp_reruns/"
-    file_list = ["Baseline+SNRresults_GJ436_Kstar0_Kt3_min_snr_5.hdf5",
-        "Baseline+SNRresults_GJ436_Kstar0_Kt3_min_snr_5.hdf5"
+    file_list = [#"Baseline+SNRresults_GJ436_Kstar0_Kt3_min_snr_5.hdf5",
+                 "Baseline+SNRresults_GJ1148_Kstar0_Kt3_min_snr_5.hdf5"
                  ]
-
-    #run_name, file_list, 
-    name_dict = er.name_dict
-    simbad_dict = er.simbad_dict
-    n_planet_dict = er.n_planet_dict
-    drop_pointsQ = False
     
-    serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/" #NOTE only for VIS
-    output_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/fin_plots/{0}/".format(run_name)
+    run_name = "bad_SNR/Cont"
+    output_dir = output_dir_master + "{0}/".format(run_name)
     os.makedirs(output_dir, exist_ok = True)
     
-    for index,f in enumerate(file_list):
-        wobble_file = results_dir + f
-        vels_file = output_dir + os.path.splitext(os.path.split(wobble_file)[1])[0] + ".vels"
+    for f in file_list:
+        results_file = results_dir + f
+        
+        #orders = [i for i in range(11,52)]
+        orders = [49]
+        #epochs = [10,40,70]
+        #epochs = [i for i in range(25,35)]
+        epochs = [26,31]
+        
+        plot_wobble_order(orders, epochs, results_file, output_dir, show_mask = True)
+#END
+########################################################################################
+##BEGIN Initial RV Results
+    #run_name = "Initial_RV"
+    #results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline_2/pipeline_pp_reruns/"
+    #file_list = ["Baseline+SNRresults_GJ436_Kstar0_Kt3_min_snr_5.hdf5",
+                 #"Baseline+SNRresults_GJ1148_Kstar0_Kt3_min_snr_5.hdf5"
+                 #]
 
-        #BEGIN EDIT
-        #1 try to access results files on network drive from laptop: Works well, use as default
-        parameters = rw.read_parameters_from_results(wobble_file)
-        carmenes_object_ID = name_dict[parameters.starname]
-        bary_starname = simbad_dict[parameters.starname]
-        #vels_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/vels_dir/" #This does nothing right?
-        #os.makedirs(vels_dir, exist_ok = True)
+    
+    ##serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/" #NOTE only for VIS
+    #output_dir = output_dir_master + "{0}/".format(run_name)
+    #os.makedirs(output_dir, exist_ok = True)
+    
+    #for index,f in enumerate(file_list):
+        #wobble_file = results_dir + f
+        #dataset_name = os.path.splitext(os.path.split(wobble_file)[1])[0]
+        #output_folder = output_dir + dataset_name + "/"
+        #os.makedirs(output_folder, exist_ok = True)
         
-        #HACK
-        kep_fit_list = [[],[]]
+        ##make res
+        #res = cws.load_results(wobble_file, correct_w_for_drift = True, correct_w_for_NZP = True)
+        
+        ##make vels
+        #vels_file = res.eval_vels_serval(output_dir)
+        
+        ##make kep_fit
+        #parameters = rw.read_parameters_from_results(wobble_file)
+        #n_planets_max = n_planet_dict[parameters.starname]
+        #kep_fit = er.vels_to_kep_fit(dataset_name, vels_file, n_planets_max = n_planets_max)
+        ##print("dir(kep_fit): ", dir(kep_fit))
+        
+        ##make fit_parameters
+        #fit_parameters = er.output_fit_parameters(kep_fit)
+        
+        
+        ###plot_matched_RVs(res, output_folder)
+        ###plot_fit(res, output_folder, fit_parameters)
+        
+        ###NOTE Plot Time Series
+        ##cws.plot_time_series(res, output_folder, fit_parameters, format_im = "pdf"
+                         ##)
+        ##cws.plot_time_series(res, output_folder, fit_parameters, phased = True, format_im = "pdf"
+                         ##)
+                         
+        ##NOTE Plot SNR correlation
+        #cws.plot_residuals_vs_snr(res, output_folder, fit_parameters, format_im = "pdf")
+        
+###END
+##BEGIN Initial RV Results : SNR
+    #run_name = "SNR_fix"
+    #results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline_2/pipeline_pp_reruns/"
+    #file_list = ["Baseline+SNRresults_GJ436_Kstar0_Kt3_min_snr_60.hdf5",
+                 #"Baseline+SNRresults_GJ1148_Kstar0_Kt3_min_snr_60.hdf5"
+                 #]
 
-        res = pr.Results_ws(wobble_file
-                    , serval_dir
-                    , carmenes_object_ID
-                    , bary_starname
-                    , load_bary = True
-                    , archive = True)
-        res.apply_corrections()
-        vels_file = res.eval_vels(output_dir)
-        #END EDIT
+    #output_dir = output_dir_master + "{0}/".format(run_name)
+    #os.makedirs(output_dir, exist_ok = True)
+    
+    #for index,f in enumerate(file_list):
+        #wobble_file = results_dir + f
+        #dataset_name = os.path.splitext(os.path.split(wobble_file)[1])[0]
+        #output_folder = output_dir + dataset_name + "/"
+        #os.makedirs(output_folder, exist_ok = True)
         
-        #2.vels to kep_fit
-        dataset_name = os.path.splitext(f)[0]
-        print("dataset_name: ", dataset_name ,"vels_vile: ", vels_file)
-        if parameters.starname in n_planet_dict:
-            n_planets_max = n_planet_dict[parameters.starname]
-        else:
-            n_planets_max = 2
-        kep_fit = er.vels_to_kep_fit(dataset_name, vels_file, n_planets_max = n_planets_max)
+        ##make res
+        #res = cws.load_results(wobble_file, correct_w_for_drift = True, correct_w_for_NZP = True)
+        ##NOTE remove corrections for precorrected wobble
+        
+        ##make vels
+        #vels_file = res.eval_vels_serval(output_dir)
+        
+        ##make kep_fit
+        #parameters = rw.read_parameters_from_results(wobble_file)
+        #n_planets_max = n_planet_dict[parameters.starname]
+        #kep_fit = er.vels_to_kep_fit(dataset_name, vels_file, n_planets_max = n_planets_max)
+        
+        ##make fit_parameters
+        #fit_parameters = er.output_fit_parameters(kep_fit)
+        
+        ###NOTE Plot Time Series
+        ##cws.plot_time_series(res, output_folder, fit_parameters, format_im = "pdf"
+                         ##)
+        ##cws.plot_time_series(res, output_folder, fit_parameters, phased = True, format_im = "pdf"
+                         ##)
+                         
+        ##NOTE Plot SNR correlation
+        #cws.plot_residuals_vs_snr(res, output_folder, fit_parameters, format_im = "pdf")
+##END
 
-        #remove worst fitting poinnts and run again if option is True
-        if drop_pointsQ:
-            n = 4
-            vels_file = er.drop_points(kep_fit, vels_file, n = n)
-            dataset_name = dataset_name + "_dropped_{}".format(n)
-            #fit again
-            kep_fit = er.vels_to_kep_fit(dataset_name, vels_file, n_planets_max = n_planets_max) 
-            
-        kep_fit_list[0] = kep_fit
-            
-        #HACK SAME FOR SERVAL
-        vels_file = res.eval_vels_serval(output_dir)#NOTE Only change from wobble implementation  so far
-        #END EDIT
 
-        #2.vels to kep_fit
-        dataset_name = parameters.starname +" Serval_avcn"
-        print("dataset_name: ", dataset_name ,"vels_vile: ", vels_file)
-        if parameters.starname in n_planet_dict:
-            n_planets_max = n_planet_dict[parameters.starname]
-            print(parameters.starname, ": ", n_planets_max)
-        else:
-            n_planets_max = 2
-        kep_fit = er.vels_to_kep_fit(dataset_name, vels_file, n_planets_max = n_planets_max)
-        
-        #remove worst fitting poinnts and run again if option is True
-        if drop_pointsQ:
-            n = 4
-            vels_file = er.drop_points(kep_fit, vels_file, n = n)
-            dataset_name = dataset_name + "_dropped_{}".format(n)
-            #fit again
-            kep_fit = er.vels_to_kep_fit(dataset_name, vels_file, n_planets_max = n_planets_max)
-        
-        kep_fit_list[1] = kep_fit
-        
-        #3.plot
-        output_file = output_dir + os.path.splitext(os.path.split(wobble_file)[1])[0]
-        #er.plot_rv_comparison(kep_fit_list, output_file)
-        er.plot_rv_comparison(kep_fit_list, output_file, phased = True, legend_labels = [r'\texttt{wobble}', 'SERVAL' ], ip = 1)
-    #END

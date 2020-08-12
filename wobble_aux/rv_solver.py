@@ -48,7 +48,7 @@ def radial_velocity_M0(t, K, P, e, omega, T0, M0):
     E = solve_kep_eqn(M,e)
     theta = true_anomaly(E,e)
     v = K * (np.cos(theta + omega_rad) + e * np.cos(omega_rad))
-    return v
+    return v[0] #[0] is HACK for list that appears around rv at some point
     
 if __name__=="__main__":
     test = [radial_velocity(t/10, 17.38, 2.644, 0.152, 325.8, 1552.077) for t in range(15520,15560)] 
