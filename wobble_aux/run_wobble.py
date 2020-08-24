@@ -222,7 +222,8 @@ class Parameters:
                  continuum_order = 1,
                  continuum_nsigma = 'default',
                  plot_continuum  = False,
-                 mask_tellurics = "no_mask"
+                 mask_tellurics = "no_mask",
+                 telluric_mask_file = "default"
                  ):
         self.starname = starname
         self.K_star = K_star
@@ -242,20 +243,26 @@ class Parameters:
         self.continuum_order = continuum_order
         #Redo Default continuum sigmas [0.3,3.0] for vis (wobble original), [0.5,1] for NIR
         #HACK Workaround to determine VIS or NIR from data suffix, could be done more cleanly. Ideally include "mode" parameter with options vis and nir, that would also change e.g. start and end order
-        if continuum_nsigma == 'default':
-            if '_vis_' in data_suffix:
+        if '_vis_' in data_suffix:
+            self.arm = 'vis'
+            if continuum_nsigma == 'default':
                 self.continuum_nsigma = [0.3,3.0]
-            elif '_nir_' in data_suffix:
+            else:
+                self.continuum_nsigma = continuum_nsigma
+        elif '_nir_' in data_suffix:
+            self.arm = 'nir'
+            if continuum_nsigma == 'default':
                 self.continuum_nsigma = [0.5,1.0]
-            else: 
-                raise Exception("data suffix incopatible with default continuum_nsigma: must indicate '_vis_' or '_nir_' ")
-        else:
-            self.continuum_nsigma = continuum_nsigma
+            else:
+                self.continuum_nsigma = continuum_nsigma
+        else: 
+            raise Exception("data suffix incopatible with default continuum_nsigma: must indicate '_vis_' or '_nir_' ")
             
         self.plot_continuum  = plot_continuum
         self.drop_orders = []
         
-        self.mask_tellurics = mask_tellurics
+        self.telluric_mask_file = telluric_mask_file # For continuum normalization
+        self.mask_tellurics = mask_tellurics # For wobble optimization
         '''
         self.dictionary = {
             "starname" : starname,
@@ -329,7 +336,8 @@ def run_wobble(parameters):
     try: #skipping the except will make major issues unless dropped epochs and orders are already handled
         epochs_list = p.epochs_list = p.global_epochs_list
         p.drop_orders = data.drop_orders # this check here only works if data object is not yet initialized with empty drop order list.
-    except AttributeError:
+    except (AttributeError, UnboundLocalError) as e:
+        print(e)
         print("Loading data. May take a few minutes")
         try:
             data = wobble.Data(data_file, orders = np.arange(p.start, p.end), min_flux=10**-5, min_snr = p.min_snr,
@@ -407,7 +415,17 @@ def run_wobble(parameters):
     print("deleted: {0}".format(temp_dir))
     
     
-    
+def op(order_index, arm = "vis"):
+    #calculates physical CARMENES interference order ("order physical -> op" from order index
+    if arm == "vis":
+        order_max = 118
+        op = order_max - order_index
+    elif arm == "nir":
+        order_max = 63.5
+        op = order_max - order_index/2
+        #op = '{:.1f}'.format(op)
+        op = round(op,1)
+    return op
     
 
 

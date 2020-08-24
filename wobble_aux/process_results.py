@@ -234,6 +234,11 @@ class Results_ws():
                 indices_serval.append(ind_jd)
                 indices_wobble.append(n)
                 
+        #HACK Throw out nan wobble errors
+        bool_isnan = np.isnan(w_RVs_er[indices_wobble])
+        indices_serval = [indices_serval[i] for i in range(len(indices_serval)) if not bool_isnan[i]]
+        indices_wobble = [indices_wobble[i] for i in range(len(indices_wobble)) if not bool_isnan[i]]
+                
         #apply to all arrays and write to object
         self.ser_avcn = ser_avcn[indices_serval]
         self.ser_rvo = ser_rvo[indices_serval]

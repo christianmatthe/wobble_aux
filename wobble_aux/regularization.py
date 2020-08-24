@@ -444,18 +444,67 @@ if __name__ == "__main__":
                    )
     """
     
-    #GJ1148 with log(reg)=0 as seed
-    run_name = "no_reg_seed"
-    objects = [["GJ1148", "J11417+427", "vis", 41.382]]
-    orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299.0],
-                           [11.34, 532.58, 0.342, 210.4, 2450000 + 1581.046, 272.6]
-                            ]# "known" planet solution to compare with
-    bary_starname = "GJ1148"
+    ##GJ1148 with log(reg)=0 as seed
+    #run_name = "no_reg_seed"
+    #objects = [["GJ1148", "J11417+427", "vis", 41.382]]
+    #orbital_parameters_mult = [[38.37, 41.380, 0.380, 258.1, 2450000 + 1581.046, 299.0],
+                           #[11.34, 532.58, 0.342, 210.4, 2450000 + 1581.046, 272.6]
+                            #]# "known" planet solution to compare with
+    #bary_starname = "GJ1148"
+    #servaldir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/"#Always use vis data as comparison, since its more reliable for fitting the T0 offset (may not be true for very late star types)
+    
+    ##chose which regularization files to start from
+    #starting_star_reg = 'regularization/dummy_star_K0_no_reg.hdf5'
+    #starting_t_reg = 'regularization/dummy_t_K3_no_reg.hdf5'
+    
+    ##set up directory structure
+    #top_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/regularization/"
+    #os.makedirs(top_directory, exist_ok = True)
+    ##if not os.path.exists(top_directory):
+        ##raise Exception("top directory {0} does not exist".format(top_directory))
+    #data_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/"
+    
+    #max_loop_iterations = 6
+    #parameter_changes = [-1,0,1]
+
+    ##TODO generate parameters file within regularization for individual order runs
+    #parameters = Parameters(starname = "GJ1148",
+                        #data_suffix = "_vis_drift_shift",
+                        #start = 0,
+                        #end = 56,
+                        #chunk_size = 5,
+                        #niter = 160,
+                        #reg_file_star =  starting_star_reg,
+                        #reg_file_t = starting_t_reg,
+                        #output_suffix = run_name,
+                        #results_dir = '../results/',
+                        #data_dir= '../data/'
+                        #)
+    ##This function can take a LONG time 13*max_loop_iterations*run_wobble_time
+    #regularization(parameters
+                   #,run_name
+                   #,objects
+                   #,orbital_parameters_mult
+                   #,bary_starname
+                   #,servaldir
+                   #,starting_star_reg
+                   #,starting_t_reg
+                   #,top_directory
+                   #,data_directory
+                   #,max_loop_iterations
+                   #,parameter_changes
+                   #)
+#BEGIN
+   #additional loops for GJ436 optimization
+    run_name = "add_loops"
+    objects = [["GJ436", "J11421+267", "vis", 2.644]]
+    orbital_parameters_mult = [[17.38, 2.644, 0.152, 325.8, 2450000 + 1552.077, 78.3]]# "known" planet solution to compare with
+    bary_starname = "GJ436"
     servaldir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_VIS/"#Always use vis data as comparison, since its more reliable for fitting the T0 offset (may not be true for very late star types)
     
     #chose which regularization files to start from
-    starting_star_reg = 'regularization/dummy_star_K0_no_reg.hdf5'
-    starting_t_reg = 'regularization/dummy_t_K3_no_reg.hdf5'
+    starting_star_reg = '../../wobble_reg_search/GJ436_orderwise_snr+drift_shift_1/loop_5/next_base_star_reg.hdf5'
+    starting_t_reg = '../../wobble_reg_search/GJ436_orderwise_snr+drift_shift_1/loop_5/next_base_t_reg.hdf5'
     
     #set up directory structure
     top_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/regularization/"
@@ -464,15 +513,16 @@ if __name__ == "__main__":
         #raise Exception("top directory {0} does not exist".format(top_directory))
     data_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/"
     
-    max_loop_iterations = 6
+    max_loop_iterations = 3
     parameter_changes = [-1,0,1]
 
     #TODO generate parameters file within regularization for individual order runs
-    parameters = Parameters(starname = "GJ1148",
-                        data_suffix = "_vis_drift_shift",
-                        start = 0,
-                        end = 56,
-                        chunk_size = 5,
+    parameters = Parameters(starname = "GJ436",
+                        min_snr = 60, # Reverted to 60.
+                        data_suffix = "_vis_drift+nzp",
+                        start = 11,
+                        end = 53,
+                        chunk_size = 1,
                         niter = 160,
                         reg_file_star =  starting_star_reg,
                         reg_file_t = starting_t_reg,
@@ -494,3 +544,4 @@ if __name__ == "__main__":
                    ,max_loop_iterations
                    ,parameter_changes
                    )
+

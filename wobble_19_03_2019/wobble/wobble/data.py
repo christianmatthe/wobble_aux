@@ -8,8 +8,9 @@ from .utils import fit_continuum
 #edited imports
 import os
 import scipy.interpolate as interpolate
-#import sys
-#sys.path.append('../../../wobble_aux')
+import sys
+sys.path.append('../../../wobble_aux')
+import run_wobble as rw
 #from run_wobble import Parameters
 
 class AllDataDropped(Exception):
@@ -83,6 +84,9 @@ class Data(object):
             epochs = np.asarray(self.epochs)
             snrs_by_epoch = np.sqrt(np.nanmean(self.ivars, axis=(0,2)))
             epochs_to_cut = snrs_by_epoch < min_snr
+            
+                                                                    
+                #plot_xs[mask]
             if np.sum(epochs_to_cut) > 0:
                 print("Data: Dropping epochs {0} because they have average SNR < {1:.0f}".format(epochs[epochs_to_cut], min_snr))
                 epochs = epochs[~epochs_to_cut]
@@ -92,6 +96,29 @@ class Data(object):
                 print("All epochs failed the quality cuts with min_snr={0:.0f}.".format(min_snr))
                 raise AllDataDropped
                 #return
+                
+            ##HACK test removing epochs with more than 20% ivars masked points
+            #if True:
+                #mask_ivars = [[self.ivars[r][n] <= 1.e-8 for n in range(len(epochs))]
+                              #for r in range(len(orders))]
+                ##sprectrum is bad if more than 20% is masked
+                #bad_ivars_spectra = [[len(self.ivars[r][n]) < 
+                                      #(10/2)*len(self.ivars[r][n][mask_ivars[r][n]])
+                                      #for n in range(len(epochs))] for r in range(len(orders))]
+                #print("bad_ivars_spectra: ", bad_ivars_spectra)
+                ##mark as bad if any order is bad
+                #bad_ivars_epochs = np.array([any(np.array(bad_ivars_spectra)[:,n]) for n in range(len(epochs))])
+                #print("bad_ivars_epochs: ", bad_ivars_epochs)
+                #if np.sum(bad_ivars_epochs) > 0:
+                    #print("Data: Dropping epochs {0} because they have more than 20 percent bad ivars ".format(epochs[bad_ivars_epochs]))
+                    #epochs = epochs[~bad_ivars_epochs]
+                    #self.read_data(origin_file, orders=orders, epochs=epochs) # overwrite with new data
+                    #self.mask_low_pixels(min_flux=min_flux, padding=padding, min_snr=min_snr)
+                #if len(epochs) == 0:
+                    #print("All epochs failed the quality cuts more than 20 percent bad ivars}.")
+                    #raise Exception("Stopping")
+                    ##raise AllDataDropped
+                    
                 
         elif chunkQ == True:
             #just in case these ar eneeded anywhere
@@ -304,7 +331,10 @@ class Data(object):
         
         #TODO make this not Hard Coded
         file_dir = os.path.dirname(__file__)
-        telluric_mask_file = file_dir + "/"+"../../../wobble_aux/carmenes_aux_files/" + "telluric_mask_carm_short.dat"
+        if p.telluric_mask_file == "default":
+            telluric_mask_file = file_dir + "/"+"../../../wobble_aux/carmenes_aux_files/" + "telluric_mask_carm_short.dat"
+        else:
+            telluric_mask_file = p.telluric_mask_file
         #mask tellurics
         if telluric_mask_file is not None:
             telluric_mask = np.genfromtxt(telluric_mask_file)
@@ -345,60 +375,132 @@ class Data(object):
                 #fit = fit_continuum(xs_deleted[r][n], ys_deleted[r][n], ivars_deleted[r][n], order = order
                                 ##, **kwargs
                                 #)
-                try:
-                    #fit = fit_continuum(xs_masked[r][n].compressed(), ys_masked[r][n].compressed(), ivars_masked[r][n].compressed(), order = order, nsigma = nsigma
-                                        #, **kwargs
-                                        #) #pass compressed arrays, to get rid of masked sections
-                    fit = fit_continuum(self.xs[r][n][mask_bool[r,n]], self.ys[r][n][mask_bool[r,n]], self.ivars[r][n][mask_bool[r,n]]
-                    ,order = order
-                    ,nsigma = nsigma
-                    #, **kwargs
-                    )
+                if telluric_mask_file is not None:
+                    try:
+                        #fit = fit_continuum(xs_masked[r][n].compressed(), ys_masked[r][n].compressed(), ivars_masked[r][n].compressed(), order = order, nsigma = nsigma
+                                            #, **kwargs
+                                            #) #pass compressed arrays, to get rid of masked sections
+                        fit = fit_continuum(self.xs[r][n][mask_bool[r,n]], self.ys[r][n][mask_bool[r,n]], self.ivars[r][n][mask_bool[r,n]]
+                        ,order = order
+                        ,nsigma = nsigma
+                        #, **kwargs
+                        )
+                        
+                        #fit = fit_continuum(xs_masked[r][n], ys_masked[r][n], ivars_masked[r][n], order = order
+                                            ##, **kwargs
+                                            #)
+                    except Exception as err:
+                        print("Continuum normalization of order {0} epoch {1} failed. Dropping order {0}".format(self.orders[r], self.epochs[n]))
+                        self.drop_orders.append(self.orders[r]) #append to drop orders list
+                        print("self.drop_orders: ", self.drop_orders)
+                        #continue
+                        break #in contrast to continue this should break the entireloop and go to  the next order instead of next epoch    
                     
-                    #fit = fit_continuum(xs_masked[r][n], ys_masked[r][n], ivars_masked[r][n], order = order
-                                        ##, **kwargs
-                                        #)
-                    #fit = fit_continuum(self.xs[r][n], self.ys[r][n], self.ivars[r][n], order = order
-                                        ##, **kwargs
-                                        #)
-                except Exception as err:
-                    print("Continuum normalization of order {0} epoch {1} failed. Dropping order {0}".format(self.orders[r], self.epochs[n]))
-                    self.drop_orders.append(self.orders[r]) #append to drop orders list
-                    print("self.drop_orders: ", self.drop_orders)
-                    #continue
-                    break #in contrast to continue this should break the entireloop and go to  the next order instead of next epoch
+                    #fit needs to be interpolated to match  grid before mask
+                    try: #just for testing where it breaks
+                        fit_function = interpolate.interp1d(xs_masked[r][n].compressed(), fit, fill_value = "extrapolate")#requires numpy 1.17 -> creates deprecation warnings
+                        #HACK If this fails for whatever reason drop the order
+                    except:                 
+                        print("dropping order {0} due to epoch {1} continuum interpolation error. xs_masked[r][n].compressed():".format(self.orders[r], self.epochs[n]))
+                        print(xs_masked[r][n].compressed())
+                        
+                        self.drop_orders.append(self.orders[r]) #append to drop orders list
+                        print("self.drop_orders: ", self.drop_orders)
+                        break # jump to next order
+                else:
+                    try:
+                        fit = fit_continuum(self.xs[r][n], self.ys[r][n], self.ivars[r][n]
+                                        ,order = order
+                                        ,nsigma = nsigma
+                                        #, **kwargs
+                                        )
+                    except Exception as err:
+                        print("Continuum normalization of order {0} epoch {1} failed. Dropping order {0}".format(self.orders[r], self.epochs[n]))
+                        self.drop_orders.append(self.orders[r]) #append to drop orders list
+                        print("self.drop_orders: ", self.drop_orders)
+                        #continue
+                        break #in contrast to continue this should break the entireloop and go to  the next order instead of next epoch
                     
                     
                 
                                     
                 if plot_continuum:
                     
+                    #fig, ax = plt.subplots(1, 1, figsize=(8,5))
+                    #ax.scatter(self.xs[r][n], self.ys[r][n], marker=".", alpha=0.1, c='b', s=40)
+                    #ax.scatter(xs_masked[r][n], ys_masked[r][n], marker=".", alpha=0.5, c='k', s=40)
+                    #mask_ivars = self.ivars[r][n] <= 1.e-8
+                    #ax.scatter(self.xs[r][n][mask_ivars], self.ys[r][n][mask_ivars], marker=".", alpha=1., c='white', s=20)                        
+                    #ax.plot(xs_masked[r][n].compressed(), fit)
+                    #fig.savefig(plot_dir_continuum +'continuum_o{0}_e{1}.png'.format(self.orders[r], self.epochs[n]))
+                    #plt.close(fig)
+                    
+                    #New plotting to match optimized model plots
                     fig, ax = plt.subplots(1, 1, figsize=(8,5))
-                    ax.scatter(self.xs[r][n], self.ys[r][n], marker=".", alpha=0.1, c='b', s=40)
-                    ax.scatter(xs_masked[r][n], ys_masked[r][n], marker=".", alpha=0.5, c='k', s=40)
-                    mask_ivars = self.ivars[r][n] <= 1.e-8
-                    ax.scatter(self.xs[r][n][mask_ivars], self.ys[r][n][mask_ivars], marker=".", alpha=1., c='white', s=20)                        
-                    ax.plot(xs_masked[r][n].compressed(), fit)
-                    fig.savefig(plot_dir_continuum +'continuum_o{0}_e{1}.png'.format(self.orders[r], self.epochs[n]))
+                    
+                    if telluric_mask_file is not None:
+                        ax.scatter(np.exp(self.xs[r][n]), self.ys[r][n], marker=".", alpha=0.1, c='b', s=40
+                                   , label = "telluric masked points"
+                                   )
+                        ax.scatter(np.exp(xs_masked[r][n]), ys_masked[r][n], marker=".", alpha=0.5, c='k', s=40
+                                   , label = "data points"
+                                   )
+                        mask_ivars = self.ivars[r][n] <= 1.e-8
+                        ax.scatter(np.exp(self.xs[r][n][mask_ivars]), self.ys[r][n][mask_ivars], marker=".", alpha=1.,# c='white',
+                                   s=40, color = "white", edgecolors = "C7"
+                                   
+                                   , label = "SNR masked points"
+                                   )
+                        ax.plot(np.exp(xs_masked[r][n].compressed()), fit
+                                , label = "continuum polynomial"
+                                )
+                        h, l = ax.get_legend_handles_labels()
+                        select = [0,2,1,3] #Rearrange to put maksed points at bottom
+                        ax.legend([h[i] for i in select], [l[i] for i in select])
+                        
+                    else:
+                        plot_xs = np.exp(self.xs[r][n])
+                        plot_ys = self.ys[r][n]
+                        ax.scatter(plot_xs, plot_ys, marker=".", alpha=0.5, c='k', s=40
+                                   , label = "data points")
+                        mask = self.ivars[r][n] <= 1.e-8
+                        ax.scatter(plot_xs[mask], plot_ys[mask], marker=".", alpha=1., #c='white',
+                                   s=40, color = "white", edgecolors = "C7"
+                                   , label = "SNR masked points")                        
+                        ax.plot(plot_xs, fit
+                                , label = "continuum polynomial")
+                        ax.legend()
+                        
+                        
+                        
+                    
+                    ax.set_ylabel('Flux [arb. unit]')
+                    ax.set_xlabel(r'Wavelength ($\AA$)')
+                    
+                    fig.savefig(plot_dir_continuum +'continuum_op{0}_o{1}_e{2}.png'.format(rw.op(self.orders[r], p.arm),self.orders[r], self.epochs[n]))
                     plt.close(fig)
+                    
+                    
                 #self.ys[r][n] -= fit
                 #fit needs to be interpolated to match  grid before mask
-                try: #just for testing where it breaks
-                    fit_function = interpolate.interp1d(xs_masked[r][n].compressed(), fit, fill_value = "extrapolate")#requires numpy 1.17 -> creates deprecation warnings
-                    #HACK If this fails for whatever reason drop the order
-                except:                 
-                    print("dropping order {0} due to epoch {1} continuum interpolation error. xs_masked[r][n].compressed():".format(self.orders[r], self.epochs[n]))
-                    print(xs_masked[r][n].compressed())
+                #try: #just for testing where it breaks
+                    #fit_function = interpolate.interp1d(xs_masked[r][n].compressed(), fit, fill_value = "extrapolate")#requires numpy 1.17 -> creates deprecation warnings
+                    ##HACK If this fails for whatever reason drop the order
+                #except:                 
+                    #print("dropping order {0} due to epoch {1} continuum interpolation error. xs_masked[r][n].compressed():".format(self.orders[r], self.epochs[n]))
+                    ##print(xs_masked[r][n].compressed())
                     
-                    self.drop_orders.append(self.orders[r]) #append to drop orders list
-                    print("self.drop_orders: ", self.drop_orders)
-                    break # jump to next order
+                    #self.drop_orders.append(self.orders[r]) #append to drop orders list
+                    #print("self.drop_orders: ", self.drop_orders)
+                    #break # jump to next order
                     
                     ##still throw error
                     #fit_function = interpolate.interp1d(xs_masked[r][n].compressed(), fit, fill_value = "extrapolate")#requires numpy 1.17 -> creates deprecation warnings
                     
-                    
-                self.ys[r][n] -= fit_function(self.xs[r][n])
+                if telluric_mask_file is not None:  
+                    self.ys[r][n] -= fit_function(self.xs[r][n])
+                else:
+                    self.ys[r][n] -= fit
                 #except:
                     #print("ERROR: Data: order {0}, epoch {1} could not be continuum normalized!".format(self.orders[r],self.epochs[n]))
                     

@@ -102,7 +102,7 @@ if __name__ == "__main__":
      #first test  
     #BEGIN baseline_0   
     pipeline_run_name = "pipeline_test_0/"
-    results_dir = results_dir_base + pipeline_run_name
+    results_dir = results_dir_base + pipeline_run_name + "/"
     os.makedirs(results_dir, exist_ok = True)
     
     
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     #     120,160,200] 
     # for niter in niter_list:
     #     pipeline_run_name = "pipeline_n{}/".format(niter)
-    #     results_dir = results_dir_base + pipeline_run_name
+    #     results_dir = results_dir_base + pipeline_run_name + "/"
     #     os.makedirs(results_dir, exist_ok = True)
     #     for star in tqdm(name_dict):
     #         parameters = rw.Parameters(starname = star,
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     ##niter_list = [600,700,800,900,1000] 
     #for niter in niter_list:
         #pipeline_run_name = "pipeline_n{}/".format(niter)
-        #results_dir = results_dir_base + pipeline_run_name
+        #results_dir = results_dir_base + pipeline_run_name + "/"
         #os.makedirs(results_dir, exist_ok = True)
         #for star in tqdm(name_dict):
             #parameters = rw.Parameters(starname = star,
@@ -190,7 +190,7 @@ if __name__ == "__main__":
                 #] 
     #for min_snr in snr_list:
         #pipeline_run_name = "pipeline_min_snr{}/".format(min_snr)
-        #results_dir = results_dir_base + pipeline_run_name
+        #results_dir = results_dir_base + pipeline_run_name + "/"
         #os.makedirs(results_dir, exist_ok = True)
         #for star in tqdm(name_dict):
             #parameters = rw.Parameters(starname = star,
@@ -226,7 +226,7 @@ if __name__ == "__main__":
                 #] 
     #for min_snr in snr_list:
         #pipeline_run_name = "pipeline_min_snr{}/".format(min_snr)
-        #results_dir = results_dir_base + pipeline_run_name
+        #results_dir = results_dir_base + pipeline_run_name + "/"
         #os.makedirs(results_dir, exist_ok = True)
         #for star in tqdm(name_dict):
             #try:
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     ##BEGIN Prototype Niter_dict
     ##pipeline_run_name = "pipeline_niter_dict/"
     #pipeline_run_name = "pipeline_niter_dict_continuum_test_[0.5,1]/"
-    #results_dir = results_dir_base + pipeline_run_name
+    #results_dir = results_dir_base + pipeline_run_name + "/"
     #os.makedirs(results_dir, exist_ok = True)
     #name_dict = name_dict_master
     ##name_dict = {"GJ876" : name_dict_master["GJ876"]}
@@ -289,7 +289,7 @@ if __name__ == "__main__":
     ##BEGIN Prototype Niter_dict
     #pipeline_run_name = "pipeline_niter_dict/"
     ##pipeline_run_name = "pipeline_continuum_test_[0.3,1]/"
-    #results_dir = results_dir_base + pipeline_run_name
+    #results_dir = results_dir_base + pipeline_run_name + "/"
     #os.makedirs(results_dir, exist_ok = True)
     #name_dict = name_dict_master
     ##name_dict = {"Teegarden" : name_dict_master["Teegarden"]}
@@ -319,39 +319,39 @@ if __name__ == "__main__":
         #rw.run_wobble(parameters)
     ##END 
     
-    #BEGIN Continuum tests
-    c_order_list = [0,1,2,3,4,5,6]
-    for continuum_order in c_order_list:
-        pipeline_run_name = "pipeline_continuum_order_{}".format(continuum_order)
-        results_dir = results_dir_base + pipeline_run_name
-        os.makedirs(results_dir, exist_ok = True)
-        name_dict = name_dict_master
-        #name_dict = {"Teegarden" : name_dict_master["Teegarden"]}
-        #name_dict = {"GJ436" : name_dict_master["GJ436"]}
-        for star in tqdm(name_dict):
-            try:
-                niter = niter_dict[star]
-            except:
-                print(star, " not in  niter_dict, using niter = 160 as default")
-                niter = 160
-            parameters = rw.Parameters(starname = star,
-                                    results_dir = results_dir,
+    ##BEGIN Continuum tests
+    #c_order_list = [0,1,2,3,4,5,6]
+    #for continuum_order in c_order_list:
+        #pipeline_run_name = "pipeline_continuum_order_{}".format(continuum_order)
+        #results_dir = results_dir_base + pipeline_run_name + "/"
+        #os.makedirs(results_dir, exist_ok = True)
+        #name_dict = name_dict_master
+        ##name_dict = {"Teegarden" : name_dict_master["Teegarden"]}
+        ##name_dict = {"GJ436" : name_dict_master["GJ436"]}
+        #for star in tqdm(name_dict):
+            #try:
+                #niter = niter_dict[star]
+            #except:
+                #print(star, " not in  niter_dict, using niter = 160 as default")
+                #niter = 160
+            #parameters = rw.Parameters(starname = star,
+                                    #results_dir = results_dir,
                                     
-                                    min_snr = 60,
+                                    #min_snr = 60,
                                     
-                                data_suffix = "_vis_drift+nzp",
-                                start = 11, #CHNGE TIS BACK TO 11
-                                end = 53,  #CHNGE TIS BACK TO 53
-                                chunk_size = 5,
-                                niter = niter,
-                                reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
-                                reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
-                                output_suffix = "",
-                                continuum_order = continuum_order,  # NOTE
-                                continuum_nsigma = [0.3,3],# NOTE
-                                plot_continuum = True)
-            rw.run_wobble(parameters)
-    #END 
+                                #data_suffix = "_vis_drift+nzp",
+                                #start = 11, #CHNGE TIS BACK TO 11
+                                #end = 53,  #CHNGE TIS BACK TO 53
+                                #chunk_size = 5,
+                                #niter = niter,
+                                #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                #output_suffix = "",
+                                #continuum_order = continuum_order,  # NOTE
+                                #continuum_nsigma = [0.3,3],# NOTE
+                                #plot_continuum = True)
+            #rw.run_wobble(parameters)
+    ##END 
     
     
         
@@ -372,7 +372,7 @@ if __name__ == "__main__":
     ##END make_data_carmenes
     ##run regular opti on all stars without drift
     #pipeline_run_name = "pipeline_no_drift_corr/"
-    #results_dir = results_dir_base + pipeline_run_name
+    #results_dir = results_dir_base + pipeline_run_name + "/"
     #os.makedirs(results_dir, exist_ok = True)
     #name_dict = name_dict_master
     #for star in tqdm(name_dict):
@@ -692,7 +692,7 @@ if __name__ == "__main__":
         #Reruns for powerpoint pres recreation section
 ##END Baseline+SNR: GJ436 without SNR and without drift
         
-##BEGIN TODO Baseline+SNR: GJ1148 o49 e31 continuum norm (order5) error 
+##BEGIN Baseline+SNR: GJ1148 o49 e31 continuum norm (order5) error 
 ###May not work the same due to now fixed implementation issues
     #snr_list = [5]
     #for snr in snr_list:
@@ -728,10 +728,243 @@ if __name__ == "__main__":
                                 #output_suffix = "cont_{}".format(continuum_order),
                                 #plot_continuum = True)
             #rw.run_wobble(parameters)
-##END TODO Baseline+SNR: GJ1148 o49 e31 continuum norm (order5) error 
+##END Baseline+SNR: GJ1148 o49 e31 continuum norm (order5) error 
+##BEGIN
+    ##NOTE "nir_cont_5_[0.3,3]" new plotting
+    ##May not work the same due to now implemented telluric dropping
+    #continuum_order = 1
+    #continuum_nsigma = [0.5,1]
+    ##continuum_nsigma = [0.5,1]
+    ##telluric_mask_file = None
+    ##telluric_mask_file = "default"
+    #mask_list = [#None,
+                 #"default"
+                 #]
+    #pipeline_run_name = "pipeline_pp_reruns/cont_plots/"
+    #results_dir = results_dir_base + pipeline_run_name
+    #os.makedirs(results_dir, exist_ok = True)
+    #name_dict = {"GJ436" : name_dict_master_nir["GJ436"]}
+    #for telluric_mask_file in mask_list:
+        #for star in tqdm(name_dict):
+            #try:
+                #niter = niter_dict[star]
+            #except:
+                #print(star, " not in  niter_dict, using niter = 160 as default")
+                #niter = 160
+            #parameters = rw.Parameters(starname = star,
+                                    #results_dir = results_dir,
+                                    
+                                    #min_snr = 60,
+                                    
+                                #data_suffix = "_nir_drift+nzp_split",
+                                ##start = 30, 
+                                ##end = 34,
+                                #start = 4,
+                                #end = 8,
+                                ##end = 15,
+                                #chunk_size = 5,
+                                #niter = niter,
+                                #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                #continuum_order = continuum_order,  # NOTE
+                                #continuum_nsigma = continuum_nsigma,# NOTE
+                                #telluric_mask_file = telluric_mask_file,
+                                #output_suffix = "nir_cont_{0}_{1}_{2}".format(continuum_order, continuum_nsigma, str(telluric_mask_file)),
+                                #plot_continuum = True)
+            #rw.run_wobble(parameters)
+##END
+
+###BEGIN
+    ##NOTE "vis_cont" new plotting
+    ##May not work the same due to now implemented telluric dropping
+    #continuum_order = 1
+    #continuum_nsigma = [0.3,3]
+    ##continuum_nsigma = [0.5,1]
+    ##telluric_mask_file = None
+    ##telluric_mask_file = "default"
+    #mask_list = [#None,
+                 #"default"
+                 #]
+    ##pipeline_run_name = "pipeline_pp_reruns/cont_plots/"
+    #pipeline_run_name = "ivars_cut_test_20/"
+    #results_dir = results_dir_base + pipeline_run_name
+    #os.makedirs(results_dir, exist_ok = True)
+    #name_dict = {"GJ436" : name_dict_master_nir["GJ436"]}
+    #for telluric_mask_file in mask_list:
+        #for star in tqdm(name_dict):
+            #try:
+                #niter = niter_dict[star]
+            #except:
+                #print(star, " not in  niter_dict, using niter = 160 as default")
+                #niter = 160
+            #parameters = rw.Parameters(starname = star,
+                                    #results_dir = results_dir,
+                                    
+                                    #min_snr = 60,
+                                    
+                                #data_suffix = "_vis_drift+nzp",
+                                ##start = 37, 
+                                ##end = 45, 
+                                #start = 30, 
+                                #end = 53, 
+                                #chunk_size = 5,
+                                #niter = niter,
+                                #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                #continuum_order = continuum_order,  # NOTE
+                                #continuum_nsigma = continuum_nsigma,# NOTE
+                                #telluric_mask_file = telluric_mask_file,
+                                #output_suffix = "vis_cont_{0}_{1}_{2}".format(continuum_order, continuum_nsigma, str(telluric_mask_file)),
+                                #plot_continuum = True)
+            #rw.run_wobble(parameters)
+##END
     #######################################################################################################################################################################################
     #####################################
     
+        ##BEGIN Continuum tests n_sigma
+    ##c_order_list = [0,1,2,3,4,5,6]
+    ##for continuum_order in c_order_list:
+        ##pipeline_run_name = "pipeline_continuum_order_{}".format(continuum_order)
+    #continuum_order = 1
+    #nsigma_list = [#[0.3,3],
+                   #[0.5,1],
+                   #[0.3,1],
+                   #[0.5,3]
+                   #]
+    #for nsigma in nsigma_list:
+        #pipeline_run_name = "pipeline_nsigma_{}".format(nsigma)
+        #results_dir = results_dir_base + pipeline_run_name + "/"
+        #os.makedirs(results_dir, exist_ok = True)
+        #name_dict = name_dict_master
+        ##name_dict = {"Teegarden" : name_dict_master["Teegarden"]}
+        ##name_dict = {"GJ436" : name_dict_master["GJ436"]}
+        #for star in tqdm(name_dict):
+            #try:
+                #niter = niter_dict[star]
+            #except:
+                #print(star, " not in  niter_dict, using niter = 160 as default")
+                #niter = 160
+            #parameters = rw.Parameters(starname = star,
+                                    #results_dir = results_dir,
+                                    
+                                    #min_snr = 60,
+                                    
+                                #data_suffix = "_vis_drift+nzp",
+                                #start = 11, #CHNGE TIS BACK TO 11
+                                #end = 53,  #CHNGE TIS BACK TO 53
+                                #chunk_size = 5,
+                                #niter = niter,
+                                #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                #output_suffix = "",
+                                #continuum_order = continuum_order,  # NOTE
+                                #continuum_nsigma = nsigma,# NOTE
+                                #plot_continuum = True)
+            #rw.run_wobble(parameters)
+    ##END 
+###BEGIN NOTE Pipeline 2 NIR sample
+    ##BEGIN make_data_carmenes
+    #data_directory = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/"
+    #serval_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../data/servaldir/CARM_NIR/" #read data already includes name dictionary
+    
+    
+    ##name_dict = {"GJ436" : name_dict_master_nir["GJ436"]}
+    #name_dict = name_dict_master_nir
+    #for star in tqdm(name_dict):
+        #starname = star
+        #simbad_name = simbad_dict[star]
+        #arm = "nir"
+        #mdc.make_data(starname, arm, data_directory, simbad_name = simbad_name, serval_dir = serval_dir, nzp_shift = True, drift_shift = True)
+    ##END make_data_carmenes
+
+    ##May not work the same due to now implemented telluric dropping
+    #continuum_order = 1
+    #continuum_nsigma = [0.5,1]
+    #mask_list = [#None,
+                 #"default"
+                 #]
+    #pipeline_run_name = "pipeline_2/NIR/"
+    #results_dir = results_dir_base + pipeline_run_name
+    #os.makedirs(results_dir, exist_ok = True)
+    #name_dict = name_dict_master_nir
+    #for telluric_mask_file in mask_list:
+        #for star in tqdm(name_dict):
+            #try:
+                #niter = niter_dict[star]
+            #except:
+                #print(star, " not in  niter_dict, using niter = 160 as default")
+                #niter = 160
+            #parameters = rw.Parameters(starname = star,
+                                    #results_dir = results_dir,
+                                    
+                                    #min_snr = 60,
+                                    
+                                #data_suffix = "_nir_drift+nzp_split",
+                                #start = 0,
+                                #end = 56,
+                                #chunk_size = 5,
+                                #niter = niter,
+                                #reg_file_star =  'regularization/dummy_star_K0_no_reg.hdf5',
+                                #reg_file_t = 'regularization/dummy_t_K3_no_reg.hdf5',
+                                #continuum_order = continuum_order,  # NOTE
+                                #continuum_nsigma = continuum_nsigma,# NOTE
+                                #telluric_mask_file = telluric_mask_file,
+                                #output_suffix = "nir_cont_{0}_{1}_{2}".format(continuum_order, continuum_nsigma, str(telluric_mask_file)),
+                                #plot_continuum = True)
+            #rw.run_wobble(parameters)
+###END
+#BEGIN pipeline_2 reg test: no (dummy) reg, default reg, wobble_reg, GJ436 regs #TODO do this with loop
+    reg_dict = {
+        'no_reg'      : ['regularization/dummy_star_K0_no_reg.hdf5', 
+                         'regularization/dummy_t_K3_no_reg.hdf5'
+                         ],
+        'default_reg' : [
+                         '../wobble_19_03_2019/wobble/wobble/regularization/default_star.hdf5',
+                         '../wobble_19_03_2019/wobble/wobble/regularization/default_t.hdf5'
+                         ]#,
+        #'wobble_reg'  : [
+                        #'../../wobble_data/wobble/regularization/GJ1148_star_K0_orders[11,53)_stitched_reformatted.hdf5'
+                        #,
+                         #'../../wobble_data/wobble/regularization/GJ1148_t_K3_orders[11,53)_stitched_reformatted.hdf5'
+                         #]
+        }
+    for i in range(0,6):
+        reg_dict['l{0}_reg'.format(i)] = [
+        '../../wobble_reg_search/GJ436_orderwise_snr+drift_shift_1/loop_{0}/next_base_star_reg.hdf5'.format(i),
+        '../../wobble_reg_search/GJ436_orderwise_snr+drift_shift_1/loop_{0}/next_base_t_reg.hdf5'.format(i)
+        ]
+    for key, reg in reg_dict.items():
+        #May not work the same due to now fixed implementation issues
+        continuum_order = 1 # NOTE
+        continuum_nsigma = [0.3,3] # NOTE
+        pipeline_run_name = "pipeline_2/reg/"
+        results_dir = results_dir_base + pipeline_run_name
+        os.makedirs(results_dir, exist_ok = True)
+        name_dict = name_dict_master
+        for star in tqdm(name_dict):
+            try:
+                niter = niter_dict[star]
+            except:
+                print(star, " not in  niter_dict, using niter = 160 as default")
+                niter = 160
+            parameters = rw.Parameters(starname = star,
+                                    results_dir = results_dir,
+                                    
+                                    min_snr = 60,
+                                    
+                                data_suffix = "_vis_drift+nzp",
+                                start = 11, 
+                                end = 53,  
+                                chunk_size = 5,
+                                niter = niter,
+                                reg_file_star =  reg[0],
+                                reg_file_t = reg[1],
+                                continuum_order = continuum_order,  
+                                continuum_nsigma = continuum_nsigma,
+                                output_suffix = "{0}".format(key),
+                                plot_continuum = False)
+            rw.run_wobble(parameters)
+##END
     
 #use eval results after this
     

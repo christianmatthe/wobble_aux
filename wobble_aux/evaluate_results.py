@@ -960,24 +960,24 @@ if __name__ == "__main__":
     #eval_serval_complete(run_name, file_list, name_dict, simbad_dict, results_dir, n_planet_dict = n_planet_dict)
     ##END
     
-    #BEGIN
-    run_name = "drop_points_test_TeX"
-    results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/pipeline_test_0/"
-    file_list = ["results_GJ436_Kstar0_Kt3_baseline_0.hdf5",
-        "results_GJ1148_Kstar0_Kt3_baseline_0.hdf5",
-        #"results_GJ3473_Kstar0_Kt3_baseline_0.hdf5",
-        #"results_YZ Cet_Kstar0_Kt3_baseline_0.hdf5",
-        #"results_GJ15A_Kstar0_Kt3_baseline_0.hdf5",
-        #"results_GJ176_Kstar0_Kt3_baseline_0.hdf5", "results_GJ536_Kstar0_Kt3_baseline_0.hdf5", "results_GJ3512_Kstar0_Kt3_baseline_0.hdf5", "results_Wolf294_Kstar0_Kt3_baseline_0.hdf5", "results_GJ876_Kstar0_Kt3_baseline_0.hdf5" , "results_Teegarden_Kstar0_Kt3_baseline_0.hdf5", "results_Barnard_Kstar0_Kt3_baseline_0.hdf5"
-                 ]
+    ##BEGIN
+    #run_name = "drop_points_test_TeX"
+    #results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/pipeline_test_0/"
+    #file_list = ["results_GJ436_Kstar0_Kt3_baseline_0.hdf5",
+        #"results_GJ1148_Kstar0_Kt3_baseline_0.hdf5",
+        ##"results_GJ3473_Kstar0_Kt3_baseline_0.hdf5",
+        ##"results_YZ Cet_Kstar0_Kt3_baseline_0.hdf5",
+        ##"results_GJ15A_Kstar0_Kt3_baseline_0.hdf5",
+        ##"results_GJ176_Kstar0_Kt3_baseline_0.hdf5", "results_GJ536_Kstar0_Kt3_baseline_0.hdf5", "results_GJ3512_Kstar0_Kt3_baseline_0.hdf5", "results_Wolf294_Kstar0_Kt3_baseline_0.hdf5", "results_GJ876_Kstar0_Kt3_baseline_0.hdf5" , "results_Teegarden_Kstar0_Kt3_baseline_0.hdf5", "results_Barnard_Kstar0_Kt3_baseline_0.hdf5"
+                 #]
 
-    eval_serval_complete(run_name, file_list, name_dict, simbad_dict, results_dir, n_planet_dict = n_planet_dict, drop_pointsQ = True)
-    #END
+    #eval_serval_complete(run_name, file_list, name_dict, simbad_dict, results_dir, n_planet_dict = n_planet_dict, drop_pointsQ = True)
+    ##END
     
     
     ##BEGIN
     #run_name ="baseline_0.4_fend"
-    #results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/pipeline_test_0/"
+    #results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline/pipeline_test_2/"
     #file_list = ["results_GJ436_Kstar0_Kt3_baseline_0.hdf5",
         #"results_GJ1148_Kstar0_Kt3_baseline_0.hdf5",
         #"results_GJ3473_Kstar0_Kt3_baseline_0.hdf5",
@@ -988,7 +988,7 @@ if __name__ == "__main__":
     ##eval_complete(run_name, file_list, name_dict, simbad_dict, results_dir)
     #eval_serval_complete(run_name, file_list, name_dict, simbad_dict, results_dir)
     ##END
-    
+      
     
     ############
     ##TEST drop_points
@@ -1147,3 +1147,52 @@ if __name__ == "__main__":
     #rms_array = read_rms_file(output_dir + "/rms.txt")
     print(rms_dict)
     '''
+    
+#NOTE BEGIN PIPELINE 2 RUNS ##################################    
+    
+    ###BEGIN
+    #c_order_list = [0,1,2,3,4,5,6]
+    #for continuum_order in c_order_list:
+        #run_name ="continuum_order_{}".format(continuum_order)
+        #results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline_2/"
+        #file_list_base = ["results_GJ436_Kstar0_Kt3_.hdf5",
+            #"results_GJ1148_Kstar0_Kt3_.hdf5",
+            #"results_GJ3473_Kstar0_Kt3_.hdf5",
+            #"results_YZ Cet_Kstar0_Kt3_.hdf5",
+            #"results_GJ15A_Kstar0_Kt3_.hdf5",
+            #"results_GJ176_Kstar0_Kt3_.hdf5", 
+            #"results_GJ536_Kstar0_Kt3_.hdf5",
+            #"results_GJ3512_Kstar0_Kt3_.hdf5",
+            #"results_Wolf294_Kstar0_Kt3_.hdf5",
+            #"results_GJ876_Kstar0_Kt3_.hdf5" ,
+            #"results_Teegarden_Kstar0_Kt3_.hdf5",
+            #"results_Barnard_Kstar0_Kt3_.hdf5"
+                    #]
+        #file_list = ["pipeline_" + run_name + f for f in file_list_base]
+        
+        #eval_complete(run_name, file_list, name_dict, simbad_dict, results_dir, n_planet_dict = n_planet_dict)
+        #eval_serval_complete(run_name, file_list, name_dict, simbad_dict, results_dir,n_planet_dict = n_planet_dict)
+    ###END
+    
+    ##BEGIN
+    reg_keys = ["no_reg"
+        #,"wobble_reg"
+        ,"default_reg"
+        
+        ]
+    reg_keys = reg_keys + ['l{0}_reg'.format(i) for i  in range(0,6)]
+    for key in reg_keys:
+        file_list = ["results_{}_Kstar0_Kt3_{}.hdf5".format(starname, key)
+                     for starname in name_dict
+                    ]
+    
+        run_name = "reg/{}".format(key)
+    
+
+        results_dir = os.path.dirname(os.path.abspath(__file__)) + "/" + "../results/pipeline_2/pipeline_2/reg/"
+        
+        eval_complete(run_name, file_list, name_dict, simbad_dict, results_dir, n_planet_dict = n_planet_dict)
+        eval_serval_complete(run_name, file_list, name_dict, simbad_dict, results_dir,n_planet_dict = n_planet_dict)
+    ##END
+
+#NOTE END PIPELINE 2 RUNS ##################################  
